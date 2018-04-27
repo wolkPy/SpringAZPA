@@ -1,0 +1,16 @@
+package py.com.qa.view;
+
+import py.com.qa.clases.AbstractInternalFrame;
+
+public class VariableView extends AbstractInternalFrame {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public VariableView(String nameFrame) {
+		super(nameFrame);
+	}
+
+}

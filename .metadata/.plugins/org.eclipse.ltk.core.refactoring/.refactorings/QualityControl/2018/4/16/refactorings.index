@@ -1,0 +1,63 @@
+1523798380232	Move compilation unit
+1523798877252	Delete element
+1523810822899	Rename field 'frmSistemaDeControl'
+1523812982808	Delete element
+1523813641613	Rename package 'py.com.qa.login'
+1523814215705	Convert local variable 'window' to field
+1523814733020	Copy compilation unit
+1523814836172	Delete element
+1523814900582	Delete element
+1523814931429	Rename type 'loginView'
+1523842999020	Extract method 'dibujarSplitPanel'
+1523844397807	Extract method 'dibujaMenu'
+1523881787586	Delete element
+1523887729734	Rename field 'frame'
+1523888337031	Extract method 'dibujarMenu'
+1523888400529	Extract method 'dibujarPrincipalPanel'
+1523888430129	Extract method 'dibujarSplitPrincipal'
+1523888452921	Extract method 'dibujarStatusPanel'
+1523891327121	Rename type 'nvoPrincipalFrm'
+1523893381425	Move compilation unit
+1523893398721	Rename type 'NvoPrincipalFrm'
+1523894465205	Rename local variable 'planillaview'
+1523904301415	Rename type 'GenericList'
+1523908711616	Delete element
+1523926258258	Delete elements
+1523926308285	Delete element
+1523926686452	Rename field 'cat_tree'
+1523926894093	Rename local variable 'ctrow'
+1523927101827	Rename type 'DisplayCategory'
+1523930508409	Delete element
+1523930533475	Delete element
+1523961554067	Rename local variable 'panel'
+1523961733302	Rename type 'PlanillaView2'
+1523971232808	Extract Class...
+1523971745931	Delete element
+1523971791141	Extract method 'cargarArbol'
+1523978524992	Rename local variable 'p'
+1523998246037	Rename method 'getAll'
+1524050023473	Delete element
+1524051063517	Rename resource 'lupa1.ico'
+1524051426641	Rename local variable 'btnNewButton'
+1524074503520	Delete elements
+1524081411882	Delete element
+1524081415011	Delete element
+1524148004716	Extract method 'dibujarStatusPanel'
+1524148050262	Extract method 'dibujarSplitPanel'
+1524148132267	Extract method 'dibujarLeftSplitPanel'
+1524148225181	Extract method 'dibujarRightSplitPanel'
+1524148809377	Extract method 'dibujarFilterPanel'
+1524149663511	Delete element
+1524149671995	Delete element
+1524149675859	Delete element
+1524149681076	Delete element
+1524149849431	Delete element
+1524150219412	Delete element
+1524153977107	Rename type 'NewPlanillaView'
+1524154867201	Rename type 'MyInternalFrame'
+1524155463289	Extract local variable 'string'
+1524168249614	Rename field 'nombrePlanilla'
+1524168257011	Rename field 'ordenPlanilla'
+1524168263091	Rename field 'estadoPlanilla'
+1524231710171	Rename type 'InternalFrame'
+1524235722746	Extract local variable 'consulta'

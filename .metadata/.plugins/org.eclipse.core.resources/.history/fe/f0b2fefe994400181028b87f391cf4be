@@ -1,0 +1,16 @@
+package py.com.qa.clases;
+
+import java.util.ArrayList;
+
+public interface Operacion<T> {
+	public long insertar();
+
+	public long getNextId();
+
+	public void borrar();
+
+	public void actualizar();
+
+	public ArrayList<T> getAll();
+	
+}

@@ -1,0 +1,11 @@
+#Mon Apr 23 15:17:26 PYT 2018
+vl=How many times the 'Finish' button pressed during the day
+l=Wizard class name
+ct=jbt
+d=1524511046755
+c=0
+cmp=usage
+a=finishWizard
+cl=org.eclipse.wb.internal.rcp.wizards.swt.application.SwtApplicationWizard
+v=2.2.101
+s=0

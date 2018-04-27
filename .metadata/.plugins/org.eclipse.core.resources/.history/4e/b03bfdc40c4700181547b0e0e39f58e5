@@ -1,0 +1,80 @@
+package py.com.qa.configs;
+
+import java.sql.Connection;
+
+public abstract class Configuracion {
+	/*
+	 * @autor = lolmedo
+	 * 
+	 * @fecha = 15/04/2018
+	 * 
+	 * @NOMBRESISTEMA = nombre del sistema
+	 * 
+	 * @QAICON = direccion del icono del sistema
+	 * 
+	 * @CON = variable global para guardar la conexión al sistema
+	 * 
+	 */
+	public static String CODEMPRESA = "01";
+	public static final String CODSUCURSAL = "1";
+	public final static String NOMBRESISTEMA = "Sistema de Control de Calidad";
+	public final static String QAICON = System.getenv("QA_HOME");
+	public static Connection CON;
+	public static String USUARIO;
+	public static String TIPMODULO = "DESIGN"; //al arrancar el sistema es Definicion
+										 //NEW = CARGA DE NUEVOS MOVIMIENTOS DIARIOS
+										 //QUERY = CONSULTA
+										 //CHANGED = MODIFICACION
+	public static String QUERY_PLANILLA =   "SELECT cod_empresa,\r\n" + 
+											"       cod_sucursal,\r\n" + 
+											"       cod_planilla,\r\n" + 
+											"       descripcion,\r\n" + 
+											"       cod_planilla_padre,\r\n" + 
+											"       orden,\r\n" + 
+											"       estado,\r\n" + 
+											"       decode((select count(*)\r\n" + 
+											"                from qa_planilla b\r\n" + 
+											"               where b.cod_empresa = a.cod_empresa\r\n" + 
+											"                 and b.cod_sucursal = a.cod_sucursal\r\n" + 
+											"                 and b.cod_planilla_padre = a.cod_planilla),\r\n" + 
+											"              0,\r\n" + 
+											"              'S',\r\n" + 
+											"              'N') consulta\r\n" + 
+											"  FROM qa_planilla a\r\n" + 
+											"  WHERE a.cod_planilla_padre is null \r\n" +
+											" START WITH a.cod_planilla_padre is null\r\n" + 
+											"CONNECT BY PRIOR a.cod_planilla = a.cod_planilla_padre\r\n" + 
+											" ORDER SIBLINGS BY a.orden\r\n";
+	/* CON ESTA CONSTANTE SE SABE CUANTAS VENTANAS INTERNAS ESTAN ABIERTAS. */
+	public static int OPENFRAMECOUNT = 0;
+	/* POSICION EN EL DESKTOP */
+	public static final int XOFFSET = 30, YOFFSET = 30;
+	public static final String QUERY_DATA_1 = "select v.cod_empresa,\r\n" + 
+													"       v.cod_sucursal,\r\n" + 
+													"       v.cod_planilla,\r\n" + 
+													"       x.plc_nveces,\r\n" + 
+													"       v.cod_variable,\r\n" + 
+													"       v.var_ordem,\r\n" + 
+													"       v.var_nom_var,\r\n" + 
+													"       v.var_nom_anali,\r\n" + 
+													"       m.abreviatura,\r\n" + 
+													"       v.var_formula,\r\n" + 
+													"       decode(v.var_ori_datos, 0, 'N', 'S') es_formula ";
+	public static final String QUERY_DATA_2 =	"  from qa_planilla        p,\r\n" + 
+													"       qa_variable        v,\r\n" + 
+													"       qa_unidad_medida   m,\r\n" + 
+													"       qa_planilla_config x\r\n" + 
+													" where p.cod_empresa = v.cod_empresa\r\n" + 
+													"   and p.cod_sucursal = v.cod_sucursal\r\n" + 
+													"   and p.cod_planilla = v.cod_planilla\r\n" + 
+													"   and x.cod_empresa = p.cod_empresa\r\n" + 
+													"   and x.cod_sucursal = p.cod_sucursal\r\n" + 
+													"   and x.cod_planilla = p.cod_planilla\r\n" + 
+													"   and m.cod_empresa = v.cod_empresa\r\n" + 
+													"   and m.cod_unidad = v.cod_unidad\r\n" + 
+													"   and p.cod_empresa = ?\r\n" + 
+													"   and p.cod_sucursal = ? \r\n" + 
+													"   and p.cod_planilla = ? \r\n" + 
+													" order by var_ordem";
+	
+}

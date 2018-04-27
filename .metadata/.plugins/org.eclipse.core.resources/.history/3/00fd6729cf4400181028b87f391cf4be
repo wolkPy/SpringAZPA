@@ -1,0 +1,119 @@
+package py.com.qa.view;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.JRadioButton;
+import javax.swing.JSeparator;
+import java.awt.Font;
+
+public class AuxiliarView {
+
+	private JFrame frame;
+	private JTextField descripcionTxt;
+	private JTextField inicioTxt;
+	private JTextField finTxt;
+	private JTextField intervaloTxt;
+	private JTextField tamanhoTxt;
+	private JTextField codPlanillaTxt;
+	private JLabel lblInicio;
+	private JLabel finLbl;
+	private JLabel intervaloIrregularLbl;
+	private JLabel tamanhoLbl;
+
+
+	/**
+	 * Create the application.
+	 */
+	public AuxiliarView() {
+		initialize();
+	}
+
+	/**
+	 * Initialize the contents of the frame.
+	 */
+	private void initialize() {
+		frame = new JFrame();
+		frame.setBounds(100, 100, 585, 557);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().setLayout(null);
+		
+		JPanel panel = new JPanel();
+		panel.setBounds(63, 28, 458, 212);
+		frame.getContentPane().add(panel);
+		panel.setLayout(null);
+		
+		JLabel descripcionLbl = new JLabel("Planilla");
+		descripcionLbl.setFont(new Font("Verdana", Font.PLAIN, 12));
+		descripcionLbl.setBounds(25, 16, 65, 16);
+		panel.add(descripcionLbl);
+		
+		codPlanillaTxt = new JTextField();
+		codPlanillaTxt.setFont(new Font("Verdana", Font.PLAIN, 12));
+		codPlanillaTxt.setColumns(10);
+		codPlanillaTxt.setBounds(102, 13, 48, 22);
+		panel.add(codPlanillaTxt);
+		
+		descripcionTxt = new JTextField();
+		descripcionTxt.setFont(new Font("Verdana", Font.PLAIN, 12));
+		descripcionTxt.setBounds(150, 13, 279, 22);
+		panel.add(descripcionTxt);
+		descripcionTxt.setColumns(10);
+		
+		intervaloIrregularLbl = new JLabel("Intervalo");
+		intervaloIrregularLbl.setFont(new Font("Verdana", Font.PLAIN, 12));
+		intervaloIrregularLbl.setBounds(25, 163, 65, 16);
+		panel.add(intervaloIrregularLbl);
+		
+		JRadioButton intervaloIrregularRdbtn = new JRadioButton("Intervalo Irregular");
+		intervaloIrregularRdbtn.setFont(new Font("Verdana", Font.PLAIN, 12));
+		intervaloIrregularRdbtn.setSelected(true);
+		intervaloIrregularRdbtn.setBounds(102, 74, 160, 25);
+		panel.add(intervaloIrregularRdbtn);
+		
+		JRadioButton intervaloRegularRdbtn = new JRadioButton("Intervalo Regular");
+		intervaloRegularRdbtn.setFont(new Font("Verdana", Font.PLAIN, 12));
+		intervaloRegularRdbtn.setBounds(281, 74, 148, 25);
+		panel.add(intervaloRegularRdbtn);
+		
+		lblInicio = new JLabel("Inicio");
+		lblInicio.setFont(new Font("Verdana", Font.PLAIN, 12));
+		lblInicio.setBounds(25, 128, 56, 16);
+		panel.add(lblInicio);
+		
+		inicioTxt = new JTextField();
+		inicioTxt.setFont(new Font("Verdana", Font.PLAIN, 12));
+		inicioTxt.setBounds(102, 125, 116, 22);
+		panel.add(inicioTxt);
+		inicioTxt.setColumns(10);
+		
+		finLbl = new JLabel("Fin");
+		finLbl.setFont(new Font("Verdana", Font.PLAIN, 12));
+		finLbl.setBounds(245, 128, 56, 16);
+		panel.add(finLbl);
+		
+		finTxt = new JTextField();
+		finTxt.setFont(new Font("Verdana", Font.PLAIN, 12));
+		finTxt.setColumns(10);
+		finTxt.setBounds(313, 125, 116, 22);
+		panel.add(finTxt);
+		
+		intervaloTxt = new JTextField();
+		intervaloTxt.setFont(new Font("Verdana", Font.PLAIN, 12));
+		intervaloTxt.setColumns(10);
+		intervaloTxt.setBounds(102, 160, 48, 22);
+		panel.add(intervaloTxt);
+		
+		tamanhoLbl = new JLabel("Tama\u00F1o");
+		tamanhoLbl.setFont(new Font("Verdana", Font.PLAIN, 12));
+		tamanhoLbl.setBounds(245, 163, 56, 16);
+		panel.add(tamanhoLbl);
+		
+		tamanhoTxt = new JTextField();
+		tamanhoTxt.setFont(new Font("Verdana", Font.PLAIN, 12));
+		tamanhoTxt.setColumns(10);
+		tamanhoTxt.setBounds(313, 160, 48, 22);
+		panel.add(tamanhoTxt);
+	}
+}

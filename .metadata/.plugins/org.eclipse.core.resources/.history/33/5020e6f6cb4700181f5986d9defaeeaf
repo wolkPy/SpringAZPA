@@ -1,0 +1,49 @@
+package py.com.qa.clases;
+
+public class DetalleLanzamiento {
+	private String codEmpresa;
+	private long codMovimiento;
+	private long codVariable;
+	private int movColumna;
+	private String movValor;
+
+	public String getCodEmpresa() {
+		return codEmpresa;
+	}
+
+	public void setCodEmpresa(String codEmpresa) {
+		this.codEmpresa = codEmpresa;
+	}
+
+	public long getCodMovimiento() {
+		return codMovimiento;
+	}
+
+	public void setCodMovimiento(long codMovimiento) {
+		this.codMovimiento = codMovimiento;
+	}
+
+	public long getCodVariable() {
+		return codVariable;
+	}
+
+	public void setCodVariable(long codVariable) {
+		this.codVariable = codVariable;
+	}
+
+	public int getMovColumna() {
+		return movColumna;
+	}
+
+	public void setMovColumna(int movColumna) {
+		this.movColumna = movColumna;
+	}
+
+	public String getMovValor() {
+		return movValor;
+	}
+
+	public void setMovValor(String movValor) {
+		this.movValor = movValor;
+	}
+}

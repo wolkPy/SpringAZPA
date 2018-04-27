@@ -1,0 +1,125 @@
+package py.com.qa.view;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JSeparator;
+import javax.swing.JTextField;
+
+import py.com.qa.actions.Action;
+import py.com.qa.clases.AbstractInternalFrame;
+import py.com.qa.clases.Planilla;
+import py.com.qa.configs.Configuracion;
+
+public class PlanillaView extends AbstractInternalFrame implements ActionListener {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private JTextField codPlanillaTxt;
+	private JTextField descripcionTxt;
+	private JTextField codPlanillaPadreTxt;
+	private JTextField ordenTxt;
+
+	public PlanillaView() {
+		super("Planilla");
+		initialize();
+
+		// ...Create the GUI and put it in the window...
+
+		// ...Then set the window size or call pack...
+		setSize(500, 500);
+
+		// Set the window's location.
+		setLocation(Configuracion.XOFFSET * Configuracion.OPENFRAMECOUNT,
+				Configuracion.YOFFSET * Configuracion.OPENFRAMECOUNT);
+	}
+
+	private void initialize() {
+
+		JLabel codPlanillaLbl = new JLabel("C\u00F3digo");
+		codPlanillaLbl.setBounds(57, 16, 97, 16);
+		add(codPlanillaLbl);
+
+		codPlanillaTxt = new JTextField();
+		codPlanillaTxt.setBounds(166, 13, 116, 22);
+		add(codPlanillaTxt);
+		codPlanillaTxt.setColumns(10);
+
+		JLabel descripcionLbl = new JLabel("Descripci\u00F3n");
+		descripcionLbl.setBounds(57, 47, 97, 16);
+		add(descripcionLbl);
+
+		descripcionTxt = new JTextField();
+		descripcionTxt.setBounds(166, 45, 116, 22);
+		add(descripcionTxt);
+		descripcionTxt.setColumns(10);
+
+		codPlanillaPadreTxt = new JTextField();
+		codPlanillaPadreTxt.setBounds(166, 76, 116, 22);
+		add(codPlanillaPadreTxt);
+		codPlanillaPadreTxt.setColumns(10);
+
+		ordenTxt = new JTextField();
+		ordenTxt.setBounds(166, 111, 116, 22);
+		add(ordenTxt);
+		ordenTxt.setColumns(10);
+
+		JCheckBox estadoChk = new JCheckBox("Activo?");
+		estadoChk.setSelected(true);
+		estadoChk.setBounds(166, 142, 113, 25);
+		add(estadoChk);
+
+		JLabel codPlanillaPadreLbl = new JLabel("Planilla Anterior");
+		codPlanillaPadreLbl.setBounds(57, 79, 97, 16);
+		add(codPlanillaPadreLbl);
+
+		JLabel ordenLbl = new JLabel("Orden");
+		ordenLbl.setBounds(57, 117, 56, 16);
+		add(ordenLbl);
+
+		JSeparator separator = new JSeparator();
+		separator.setBounds(12, 176, 408, 64);
+		add(separator);
+
+		/* BOTONES */
+		JButton boton = new JButton("Guardar");
+		boton.setBounds(95, 215, 97, 25);
+		boton.setActionCommand("GUARDAR");
+		boton.addActionListener(this);
+		add(boton);
+
+		boton = new JButton("Salir");
+		boton.setBounds(207, 215, 97, 25);
+		boton.setActionCommand("SALIR");
+		boton.addActionListener(this);
+		add(boton);
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if ("SALIR".equals(e.getActionCommand())) {
+			Action.salir();
+		}
+		Planilla p = new Planilla(Configuracion.CODEMPRESA, Configuracion.CODSUCURSAL,
+				Long.parseLong(codPlanillaTxt.getText()), descripcionTxt.getText(),
+				Long.parseLong(codPlanillaPadreTxt.getText()), ordenTxt.getText(), "A", "");
+		if ("GUARDAR".equals(e.getActionCommand())) {
+			if (Configuracion.TIPMODULO.equalsIgnoreCase("NEW")) {
+				p.insertar();
+			}
+			if (Configuracion.TIPMODULO.equalsIgnoreCase("QUERY")) {
+				p.actualizar();
+			}
+		}
+		if ("BORRAR".equals(e.getActionCommand())) {
+			p.borrar();
+		}
+	}
+
+}

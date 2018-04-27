@@ -1,0 +1,11 @@
+#Mon Apr 23 15:17:26 PYT 2018
+vl=0 \= failed, 1 \= successful
+l=Server Runtime ID
+ct=server
+d=1524511046740
+c=0
+cmp=server
+a=new
+cl=org.jboss.ide.eclipse.as.eap.70
+v=3.5.2
+s=0

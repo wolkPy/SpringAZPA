@@ -1,0 +1,28 @@
+package py.com.qa.main;
+
+import java.awt.EventQueue;
+
+import py.com.qa.configs.Configuracion;
+import py.com.qa.view.LoginView;
+
+public class QASystem {
+	public static void main(String[] args) {
+		if (args.length != 0) {
+			Configuracion.CODEMPRESA = args[0];
+		}
+
+		EventQueue.invokeLater(new Runnable() {
+			@SuppressWarnings("unused")
+			private LoginView window;
+
+			public void run() {
+				try {
+					window = new LoginView();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+
+	}
+}
