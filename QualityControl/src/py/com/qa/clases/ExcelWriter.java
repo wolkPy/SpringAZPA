@@ -8,6 +8,11 @@ import java.sql.Statement;
 
 import py.com.qa.configs.Configuracion;
 
+/**
+ *   
+ * @author lolmedo
+ * @fecha 27/04/2018
+ */
 public class ExcelWriter {
 	private int numeroFilas;
 	private int numeroColumnas;
@@ -20,21 +25,25 @@ public class ExcelWriter {
 			Connection con = Configuracion.CON;
 			Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			ResultSet rs = stmt.executeQuery(sql);
-			/** cargar nombre de columnas **/
+			/***************************************************************/
+			/***************** CARGAR NOMBRE DE COLUMNAS *******************/
+			/***************************************************************/
 			ResultSetMetaData rsmd = rs.getMetaData();
 			columnNames = new String[rsmd.getColumnCount()];
 			for (int i = 1; i <= rsmd.getColumnCount(); i++) {
 				columnNames[i - 1] = rsmd.getColumnName(i);
 			}
-			/** ir a ultimo registro, para saber cuantas filas tiene **/
+			/***************************************************************/
+			/***** IR A ULTIMO REGISTRO PARA SABER CUANTAS FILAS TIENE *****/
+			/***************************************************************/
 			rs.last();
 			numeroFilas = rs.getRow();
 			numeroColumnas = rsmd.getColumnCount();
 			data = new Object[numeroFilas][numeroColumnas];
-			/**
-			 * regresa a registro 0, para poder recorrer desde el primer registro, o sino
-			 * recorre desde el segundo
-			 **/
+			/***************************************************************/
+			/** REGRESA A REGISTRO 0, PARA PODER RECORRER DESDE EL PRIMER **/
+			/*********** REGISTRO, O SINO RECORRE DESDE EL SEGUNDO *********/
+			/***************************************************************/
 			rs.beforeFirst();
 			int j = 0;
 			while (rs.next()) {

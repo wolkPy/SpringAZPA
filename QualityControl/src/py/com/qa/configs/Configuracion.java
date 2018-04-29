@@ -36,7 +36,7 @@ public abstract class Configuracion {
 			+ "                 and b.cod_sucursal = a.cod_sucursal\r\n"
 			+ "                 and b.cod_planilla_padre = a.cod_planilla),\r\n" + "              0,\r\n"
 			+ "              'S',\r\n" + "              'N') consulta\r\n" + "  FROM qa_planilla a\r\n"
-			+ "  WHERE a.estado = 'A' and a.cod_planilla_padre = 0 \r\n" + " START WITH a.cod_planilla_padre = 0 \r\n"
+			+ "  WHERE a.cod_empresa = ? and a.estado = 'A' and a.cod_planilla_padre = 0 \r\n" + " START WITH a.cod_planilla_padre = 0 \r\n"
 			+ "CONNECT BY PRIOR a.cod_planilla = a.cod_planilla_padre\r\n"
 			+ " ORDER SIBLINGS BY to_number(a.orden) \r\n";
 	/* CON ESTA CONSTANTE SE SABE CUANTAS VENTANAS INTERNAS ESTAN ABIERTAS. */

@@ -6,16 +6,13 @@ import java.sql.SQLException;
 
 import py.com.qa.configs.Configuracion;
 
+/*
+ * CLASE PARA DETALLE DE LANZAMIENTO O MOVIMIENTO DE CONTROL DE CALIDAD
+ * */
 public class DetalleLanzamiento {
 	/* CONSTANTES */
 	private static final String sqlInsert = "insert into qa_lab_mov_deta(cod_empresa, cod_movimiento, cod_variable, mov_columna, mov_valor) values (?,?,?,?,?)";
-	// private static final String sqlDelete = "delete from qa_lab_mov where
-	// cod_empresa = ? and cod_movimiento = ?";
-	// private static final String sqlUpdate = "";
-	// private static final String sqlSelectAll = "";
-	// private static final String sqlSelectId = "";
-	// private static final String sqlSelectMaxId = "";
-	// private static final String sqlSelectDescripcion = "";
+	private static final String sqlUpdate = "update qa_lab_mov_deta mov_valor = ? where cod_empresa = ? and cod_movimiento = ? and cod_variable = ? and mov_columna = ?";
 	private Connection con = Configuracion.CON;
 
 	/* VARIABLES */
@@ -35,6 +32,9 @@ public class DetalleLanzamiento {
 		this.movValor = movValor;
 	}
 
+	/***************************************************************/
+	/************** INSERTAR DETALLE DE LANZAMIENTO ****************/
+	/***************************************************************/
 	public void insertar() {
 		try {
 			PreparedStatement pstmt = con.prepareStatement(sqlInsert);
@@ -43,6 +43,25 @@ public class DetalleLanzamiento {
 			pstmt.setLong(3, this.codVariable);
 			pstmt.setInt(4, this.movColumna);
 			pstmt.setString(5, this.movValor);
+
+			pstmt.executeUpdate();
+			pstmt.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/***************************************************************/
+	/************* ACTUALIZAR DETALLE DE LANZAMIENTO ***************/
+	/***************************************************************/
+	public void actualizar() {
+		try {
+			PreparedStatement pstmt = con.prepareStatement(sqlUpdate);
+			pstmt.setString(1, this.movValor);
+			pstmt.setString(2, this.codEmpresa);
+			pstmt.setLong(3, this.codMovimiento);
+			pstmt.setLong(4, this.codVariable);
+			pstmt.setInt(5, this.movColumna);
 
 			pstmt.executeUpdate();
 			pstmt.close();

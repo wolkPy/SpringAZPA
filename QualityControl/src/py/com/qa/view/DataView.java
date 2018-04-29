@@ -24,7 +24,7 @@ import py.com.qa.configs.Configuracion;
 
 public class DataView extends AbstractInternalFrame implements KeyListener {
 	/* CONSTANTES */
-	private static final String sqlSelectPlanillaDescripcion = "select a.cod_empresa,a.cod_sucursal,a.cod_planilla,a.descripcion,a.cod_planilla_padre,a.orden,a.estado,nvl(b.plc_tam_col,0) plc_tam_col from qa_planilla a, qa_planilla_config b where a.cod_empresa = b.cod_empresa(+) and a.cod_sucursal = b.cod_sucursal(+) and a.cod_planilla = b.cod_planilla(+) and a.cod_empresa = ? and a.cod_sucursal = ? and a.descripcion = ? and a.cod_planilla_padre <> 0";
+	private static final String sqlSelectPlanillaDescripcion = "select a.cod_empresa,a.cod_sucursal,a.cod_planilla,a.descripcion,a.cod_planilla_padre,a.orden,a.estado,nvl(b.plc_tam_col,0) plc_tam_col from qa_planilla a, qa_planilla_config b where a.cod_empresa = b.cod_empresa(+) and a.cod_sucursal = b.cod_sucursal(+) and a.cod_planilla = b.cod_planilla(+) and a.cod_empresa = ? and a.cod_sucursal = ? and a.descripcion = ? and a.cod_planilla_padre <> 0 order by to_number(orden)";
 	private static final String sqlSelectMovimiento = "select cod_movimiento from qa_lab_mov where cod_empresa = ? and cod_planilla = ? and fecha = ?";
 	/**
 	 * 
@@ -111,7 +111,6 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		/***** EN CASO QUE CODIGO DE MOVIMIENTO NO SE HAYA ****/
 		/************ ENCONTRADO SIGUE PROCESO NORMAL *********/
 		/******************************************************/
-
 		if (this.lan == null) {
 			if (planilla != null) {
 				CallableStatement sentencia;
@@ -184,8 +183,13 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		JScrollPane centerPane = null;
 
 		sqlData = null;
+		/*
+		 * DEPENDIENDO SI ENCONTRO O NO LA PLANILLA REGISTRADA SE CARGA O NO UNA NUEVA
+		 * PLANILLA
+		 */
 		System.out.println("sql = " + sql);
 		ew = new ExcelWriter(sql);
+		boolean isVisible = false;
 		if (ew.getData().length != 0 && ew.getColumnNames().length != 0) {
 			sqlData = new JTable(ew.getData(), ew.getColumnNames());
 			sqlData.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -199,7 +203,14 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 				/* SETEAR DE ACUERDO AL NOMBRE DE LAS COLUMNAS */
 				/**** OCULTAR CAMPOS QUE NO SE DEBEN MOSTRAR ***/
 				/***********************************************/
-				if (i <= 5) {
+
+				/***********************************************/
+				/* MIENTRAS NO LLEGUE A VAR_ORDEN SE OCULTARAN */
+				/************ TODAS LAS COLUMNAS ***************/
+				if (sqlData.getColumnName(i).toUpperCase().equals("VAR_ORDEM")) {
+					isVisible = true;
+				}
+				if (!isVisible) {
 					sqlData.getColumn(sqlData.getColumnName(i)).setWidth(0);
 					sqlData.getColumn(sqlData.getColumnName(i)).setMinWidth(0);
 					sqlData.getColumn(sqlData.getColumnName(i)).setMaxWidth(0);
@@ -207,9 +218,9 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 					/*****************************/
 					/* SETEAR TAMAÑO DE COLUMNAS */
 					/*****************************/
-					if (this.tamanhoCol != 0) {
-						sqlData.getColumn(sqlData.getColumnName(i)).setWidth(this.tamanhoCol);
-					}
+					sqlData.getColumn(sqlData.getColumnName(i)).setWidth(this.tamanhoCol);
+					sqlData.getColumn(sqlData.getColumnName(i)).setMinWidth(0);
+					sqlData.getColumn(sqlData.getColumnName(i)).setMaxWidth(0);
 				}
 			}
 		}
@@ -217,7 +228,7 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		sqlData.addKeyListener(this);
 		principalPane.addKeyListener(this);
 		getContentPane().addKeyListener(this);
-		
+
 		this.add(principalPane, BorderLayout.CENTER);
 	}
 

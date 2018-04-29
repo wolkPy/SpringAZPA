@@ -8,5 +8,4 @@ public interface Operacion {
 	public void borrar();
 
 	public void actualizar();
-
 }

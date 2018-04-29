@@ -13,12 +13,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
 import javax.swing.ImageIcon;
+
 import javax.swing.JButton;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
@@ -29,6 +29,8 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import py.com.qa.clases.Planilla;
 import py.com.qa.configs.Configuracion;
+import py.com.qa.exceptions.AZPAException;
+import py.com.qa.exceptions.Code;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -73,8 +75,8 @@ public class PrincipalView extends JFrame
 		int inset = 50;
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		setBounds(inset, inset, screenSize.width - inset * 2, screenSize.height - inset * 2);
-		/***********************************/
-		/***********************************/
+		/*************************************/
+		/*************************************/
 		panelPrincipal = new JPanel();
 		panelPrincipal.setBorder(new CompoundBorder());
 		setContentPane(panelPrincipal);
@@ -95,7 +97,7 @@ public class PrincipalView extends JFrame
 		/******** CREAR SPLITPANEL ***********/
 		/*************************************/
 		dibujarSplitPanel();
-	}
+	} // FIN INITIALIZE
 
 	private void dibujarSplitPanel() {
 		JSplitPane principalSplitPanel = null;
@@ -125,10 +127,11 @@ public class PrincipalView extends JFrame
 		JPanel workFilterPanel = new JPanel();
 		dibujarFilterPanel(workFilterPanel);
 		workSpacePanel.add(workFilterPanel, BorderLayout.NORTH);
-		/*************************************/
-		/**** DIBUJA EL PANEL DE IZQUIERDA ***/
-		/********** WORK PANEL CENTRAL *********/
-		/*************************************/
+		/****************************************/
+		/***** DIBUJA EL PANEL DE IZQUIERDA *****/
+		/********** WORK PANEL CENTRAL **********/
+		/************* DIBUJA DESKTOP ***********/
+		/****************************************/
 		JPanel workPanel = new JPanel();
 		workPanel.setLayout(new BorderLayout(0, 0));
 		desktop = new JDesktopPane();
@@ -181,19 +184,14 @@ public class PrincipalView extends JFrame
 		/******** ETIQUETAS DE STATUS ********/
 		/*************************************/
 		{
-			JLabel usuarioLbl = new JLabel("Usuario:");
+			JLabel usuarioLbl = new JLabel("Usuario: " + Configuracion.USUARIO);
 			usuarioLbl.setIcon(new ImageIcon(PrincipalView.class.getResource("/CONTRASE+\u00E6A.gif")));
 			statusPanel.add(usuarioLbl);
 		}
 		{
-			JLabel instanciaLbl = new JLabel("Instancia:");
+			JLabel instanciaLbl = new JLabel("Instancia:" + "BDVCA");
 			instanciaLbl.setIcon(new ImageIcon(PrincipalView.class.getResource("/connect_creating.gif")));
 			statusPanel.add(instanciaLbl);
-		}
-		{
-			JLabel dataTimeLbl = new JLabel("Fecha-Hora:");
-			dataTimeLbl.setIcon(new ImageIcon(PrincipalView.class.getResource("/history.gif")));
-			statusPanel.add(dataTimeLbl);
 		}
 	}
 
@@ -205,8 +203,10 @@ public class PrincipalView extends JFrame
 				DefaultMutableTreeNode node_1 = null;
 				try {
 					Connection con = Configuracion.CON;
-					Statement stmt = con.createStatement();
-					ResultSet res = stmt.executeQuery(Configuracion.QUERY_PLANILLA);
+					PreparedStatement pstmt = con.prepareStatement(Configuracion.QUERY_PLANILLA);
+					pstmt.setString(1, Configuracion.CODEMPRESA);
+					ResultSet res = pstmt.executeQuery();
+					System.out.println(Configuracion.QUERY_PLANILLA);
 					ResultSet rs = null;
 					Planilla padre = null;
 					while (res.next()) {
@@ -223,10 +223,11 @@ public class PrincipalView extends JFrame
 								estado, consulta);
 						node_1 = new DefaultMutableTreeNode(padre.getDescripcion());
 						if (consulta.equalsIgnoreCase("N")) {
-							PreparedStatement pstmt = con.prepareStatement(
-									"select * from qa_planilla where cod_planilla_padre = ? and estado = 'A'");
-							pstmt.setLong(1, codPlanilla);
-							rs = pstmt.executeQuery();
+							PreparedStatement pstmt2 = con.prepareStatement(
+									"select * from qa_planilla where cod_planilla_padre = ? and estado = 'A' and cod_empresa = ? order by to_number(orden)");
+							pstmt2.setLong(1, codPlanilla);
+							pstmt2.setString(2, Configuracion.CODEMPRESA);
+							rs = pstmt2.executeQuery();
 							while (rs.next()) {
 								node_1.add(new DefaultMutableTreeNode(rs.getString("descripcion")));
 							}
@@ -236,7 +237,7 @@ public class PrincipalView extends JFrame
 						this.add(node_1);
 					}
 				} catch (SQLException e) {
-					e.printStackTrace();
+					new AZPAException(Code.INTERNAL_DATABASE_ERROR, e.toString());
 				}
 			}
 		}));
@@ -382,4 +383,5 @@ public class PrincipalView extends JFrame
 		/*************************************/
 		Configuracion.FILTER_DATE_CHOOSER = this.dateChooser;
 	}
+
 }
