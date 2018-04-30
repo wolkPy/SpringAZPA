@@ -200,14 +200,12 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 				 */
 				private static final long serialVersionUID = 1L;
 
-				@Override
 				public boolean isCellEditable(int rowIndex, int colIndex) {
 					return colIndex != 0 && colIndex != 1 && colIndex != 2 && colIndex != 3 && colIndex != 4
 							&& colIndex != 5;
 				}
 
 				/**/
-				@Override
 				public void valueChanged(ListSelectionEvent e) {
 					super.valueChanged(e);
 					checkSelection(false);
@@ -324,9 +322,6 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 						/******************************************************************/
 						if (sqlData.getColumnName(i).toString().equals("1")) {
 							isOk = true;
-						}
-						if (sqlData.getColumnName(i).toString().equals("RESULTADO")) {
-							isOk = false;
 						}
 						if (sqlData.getColumnName(i).toString().equals("COD_VARIABLE")) {
 							indiceCodVariable = i;

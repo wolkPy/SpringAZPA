@@ -1,0 +1,78 @@
+create or replace function fnc_devu_qa_lab_mov(
+       pcod_empresa in char,
+       pcod_sucursal in char,
+       pcod_planilla in number,
+       pcod_movimiento in number) return varchar2 is
+
+  vnveces number;
+  vdivision number;
+  --
+  vcolumnas varchar2(10000) := '';
+  vcount  number := 1;
+  vsql    varchar2(15000);
+begin
+
+  select plc_nveces, plc_division
+    into vnveces, vdivision
+    from qa_planilla_config x
+   where x.cod_empresa = pcod_empresa
+     and x.cod_sucursal = pcod_sucursal
+     and x.cod_planilla = pcod_planilla;
+
+  --si planilla es irregular entonces
+  if vdivision = 1 then
+    while vcount <= vnveces loop
+      dbms_output.put_line(vcount);
+      if vcount = 1 then
+        vcolumnas := vcolumnas||'decode(det.mov_columna, '||chr(39)||vcount||chr(39)||', mov_valor, null) "'||vcount||'"';
+      else
+        vcolumnas := vcolumnas||', decode(det.mov_columna, '||chr(39)||vcount||chr(39)||', mov_valor, null) "'||vcount||'"';
+      end if;
+      vcount := vcount + 1;
+    end loop;
+  else --division = 0 ====> regular
+    /* FALTA PROGRAMAR SEGUN CONFIGURACION DE PLANILLA */
+    vcolumnas := ' NULL regular ';
+  end if;
+    dbms_output.put_line(vcount);
+  if vnveces > 1 then
+    vcolumnas := vcolumnas||', null Resultado';
+  end if;
+
+  vsql := 'select v.cod_empresa, '||
+          '       v.cod_sucursal, '||
+          '       v.cod_planilla, '||
+          '       nvl(x.plc_nveces,1) plc_nveces, '||
+          '       v.cod_variable, '||
+          '       v.var_formula, '||
+          '       decode(v.var_ori_datos, 0, '||chr(39)||'N'||chr(39)||', '||chr(39)||'S'||chr(39)||') es_formula, '||
+          '       v.var_ordem orden, '||
+          '       v.var_nom_var variable, '||
+          '       v.var_nom_anali análisis, '||
+          '       m.abreviatura medida, ';
+
+  vsql:= vsql||vcolumnas;
+
+  vsql := vsql||'  from qa_planilla        p, '||
+                '         qa_variable        v, '||
+                '         qa_unidad_medida   m, '||
+                '         qa_planilla_config x, '||
+                '         qa_lab_mov_deta    det '||
+                '   where p.cod_empresa = v.cod_empresa '||
+                '     and p.cod_sucursal = v.cod_sucursal '||
+                '     and p.cod_planilla = v.cod_planilla '||
+                '     and x.cod_empresa(+) = p.cod_empresa '||
+                '     and x.cod_sucursal(+) = p.cod_sucursal '||
+                '     and x.cod_planilla(+) = p.cod_planilla '||
+                '     and m.cod_empresa = v.cod_empresa '||
+                '     and m.cod_unidad = v.cod_unidad '||
+                '     and v.cod_empresa = det.cod_empresa '||
+                '     and v.cod_variable = det.cod_variable '||
+                '     and p.estado = '||chr(39)||'A'||chr(39)||
+                '     and det.cod_movimiento =  '||pcod_movimiento||
+                '     and p.cod_empresa = '||chr(39)||pcod_empresa||chr(39)||
+                '     and p.cod_sucursal = '||chr(39)||pcod_sucursal||chr(39)||
+                '     and p.cod_planilla = '||pcod_planilla||
+                '   order by v.var_ordem';
+  return vsql;
+end;

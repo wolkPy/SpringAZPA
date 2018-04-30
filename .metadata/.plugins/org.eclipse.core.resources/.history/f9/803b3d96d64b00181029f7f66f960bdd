@@ -15,9 +15,6 @@ import java.util.Date;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JViewport;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
 
 import py.com.qa.clases.DetalleLanzamiento;
 import py.com.qa.clases.ExcelWriter;
@@ -194,36 +191,9 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		ew = new ExcelWriter(sql);
 		boolean isVisible = false;
 		if (ew.getData().length != 0 && ew.getColumnNames().length != 0) {
-			sqlData = new JTable(ew.getData(), ew.getColumnNames()) {
-				/**
-				 * 
-				 */
-				private static final long serialVersionUID = 1L;
-
-				@Override
-				public boolean isCellEditable(int rowIndex, int colIndex) {
-					return colIndex != 0 && colIndex != 1 && colIndex != 2 && colIndex != 3 && colIndex != 4
-							&& colIndex != 5;
-				}
-
-				/**/
-				@Override
-				public void valueChanged(ListSelectionEvent e) {
-					super.valueChanged(e);
-					checkSelection(false);
-				}
-			};
+			sqlData = new JTable(ew.getData(), ew.getColumnNames());
 			sqlData.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-			//
-			sqlData.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-			//
 			centerPane = new JScrollPane(sqlData);
-			JViewport viewport = new JViewport();
-			viewport.setView(sqlData);
-			viewport.setPreferredSize(sqlData.getPreferredSize());
-			centerPane.setRowHeaderView(viewport);
-			centerPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, sqlData.getTableHeader());
-			//
 			principalPane.add(centerPane);
 		}
 		/* RECORRER TABLA */
@@ -237,43 +207,29 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 				/***********************************************/
 				/* MIENTRAS NO LLEGUE A VAR_ORDEN SE OCULTARAN */
 				/************ TODAS LAS COLUMNAS ***************/
-				if (sqlData.getColumnName(i).toUpperCase().equals("ORDEN")) {
+				if (sqlData.getColumnName(i).toUpperCase().equals("VAR_ORDEM")) {
 					isVisible = true;
 				}
 				if (!isVisible) {
 					sqlData.getColumn(sqlData.getColumnName(i)).setWidth(0);
 					sqlData.getColumn(sqlData.getColumnName(i)).setMinWidth(0);
 					sqlData.getColumn(sqlData.getColumnName(i)).setMaxWidth(0);
+				} else {
+					/*****************************/
+					/* SETEAR TAMAÑO DE COLUMNAS */
+					/*****************************/
+					sqlData.getColumn(sqlData.getColumnName(i)).setWidth(this.tamanhoCol);
+					sqlData.getColumn(sqlData.getColumnName(i)).setMinWidth(0);
+					sqlData.getColumn(sqlData.getColumnName(i)).setMaxWidth(0);
 				}
-				// else {
-				/*****************************/
-				/* SETEAR TAMAÑO DE COLUMNAS */
-				/*****************************/
-				// sqlData.getColumn(sqlData.getColumnName(i)).setWidth(this.tamanhoCol);
-				// sqlData.getColumn(sqlData.getColumnName(i)).setMinWidth(30);
-				// sqlData.getColumn(sqlData.getColumnName(i)).setMaxWidth(30);
-				// }
 			}
 		}
 		centerPane.addKeyListener(this);
 		sqlData.addKeyListener(this);
 		principalPane.addKeyListener(this);
-
 		getContentPane().addKeyListener(this);
 
 		this.add(principalPane, BorderLayout.CENTER);
-	}
-
-	private void checkSelection(boolean isFixedTable) {
-		int fixedSelectedIndex = sqlData.getSelectedRow();
-		int selectedIndex = sqlData.getSelectedRow();
-		if (fixedSelectedIndex != selectedIndex) {
-			if (isFixedTable) {
-				sqlData.setRowSelectionInterval(fixedSelectedIndex, fixedSelectedIndex);
-			} else {
-				sqlData.setRowSelectionInterval(selectedIndex, selectedIndex);
-			}
-		}
 	}
 
 	@Override
@@ -318,26 +274,17 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 					int indiceCodVariable = 0;
 
 					for (int i = 0; i < sqlData.getColumnCount(); i++) {
-						System.out.println(sqlData.getColumnName(i).toString());
 						/******************************************************************/
 						/** AL ENCONTRAR LA COLUMNA 1 EMPIEZA A INSERTAR LOS MOVIMIENTOS **/
 						/******************************************************************/
 						if (sqlData.getColumnName(i).toString().equals("1")) {
 							isOk = true;
 						}
-						if (sqlData.getColumnName(i).toString().equals("RESULTADO")) {
-							isOk = false;
-						}
 						if (sqlData.getColumnName(i).toString().equals("COD_VARIABLE")) {
 							indiceCodVariable = i;
 						}
 						if (isOk) {
-							if (sqlData.getValueAt(k, i) == null) {
-								value = "";
-							} else {
-								System.out.println(sqlData.getValueAt(k, i).toString());
-								value = sqlData.getValueAt(k, i).toString();
-							}
+							value = sqlData.getValueAt(k, i).toString();
 							codVariable = Long.parseLong(sqlData.getValueAt(k, indiceCodVariable).toString());
 							movCol = Integer.parseInt(sqlData.getColumnName(i).toString());
 							dLan = new DetalleLanzamiento(lan.getCodEmpresa(), lan.getCodMovimiento(), codVariable,
@@ -367,27 +314,16 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 						if (sqlData.getColumnName(i).toString().equals("1")) {
 							isOk = true;
 						}
-						if (sqlData.getColumnName(i).toString().equals("RESULTADO")) {
-							isOk = false;
-						}
 						if (sqlData.getColumnName(i).toString().equals("COD_VARIABLE")) {
 							indiceCodVariable = i;
 						}
 						if (isOk) {
-							if (sqlData.getValueAt(k, i) == null) {
-								value = "";
-							} else {
-								System.out.println(sqlData.getValueAt(k, i).toString());
-								value = sqlData.getValueAt(k, i).toString();
-							}
-							System.out.println(Long.parseLong(sqlData.getValueAt(k, indiceCodVariable).toString()));
+							value = sqlData.getValueAt(k, i).toString();
 							codVariable = Long.parseLong(sqlData.getValueAt(k, indiceCodVariable).toString());
-							System.out.println(Integer.parseInt(sqlData.getColumnName(i).toString()));
 							movCol = Integer.parseInt(sqlData.getColumnName(i).toString());
-
 							dLan = new DetalleLanzamiento(lan.getCodEmpresa(), lan.getCodMovimiento(), codVariable,
 									movCol, value.replace(".", ","));
-							dLan.actualizar();
+							dLan.insertar();
 						}
 					}
 				}

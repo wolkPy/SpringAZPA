@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-<fullyQualifiedTypeName name="java.util.List"/>
-<fullyQualifiedTypeName name="py.com.qa.clases.AbstractList"/>
-<fullyQualifiedTypeName name="java.beans.Statement"/>
-<fullyQualifiedTypeName name="py.com.qa.clases.PlanillaList"/>
-<fullyQualifiedTypeName name="py.com.qa.clases.DisplayPlanilla"/>
-<fullyQualifiedTypeName name="javax.swing.JTree"/>
 <fullyQualifiedTypeName name="javax.swing.JScrollPane"/>
 <fullyQualifiedTypeName name="py.com.qa.conectivity.ManejadorConexiones"/>
 <fullyQualifiedTypeName name="javax.swing.tree.MutableTreeNode"/>
@@ -34,7 +28,6 @@
 <fullyQualifiedTypeName name="javax.swing.event.TreeSelectionListener"/>
 <fullyQualifiedTypeName name="javax.swing.event.InternalFrameListener"/>
 <fullyQualifiedTypeName name="py.com.qa.clases.AbstractInternalFrame"/>
-<fullyQualifiedTypeName name="java.sql.PreparedStatement"/>
 <fullyQualifiedTypeName name="java.sql.ResultSet"/>
 <fullyQualifiedTypeName name="com.sun.jmx.snmp.Timestamp"/>
 <fullyQualifiedTypeName name="java.sql.Timestamp"/>
@@ -54,10 +47,17 @@
 <fullyQualifiedTypeName name="java.text.SimpleDateFormat"/>
 <fullyQualifiedTypeName name="py.com.qa.clases.Lanzamiento"/>
 <fullyQualifiedTypeName name="java.awt.event.MouseListener"/>
-<fullyQualifiedTypeName name="py.com.qa.configs.Configuracion"/>
 <fullyQualifiedTypeName name="javax.management.timer.Timer"/>
 <fullyQualifiedTypeName name="java.util.Date"/>
 <fullyQualifiedTypeName name="java.lang.Runnable"/>
 <fullyQualifiedTypeName name="py.com.qa.clases.Reloj"/>
 <fullyQualifiedTypeName name="java.lang.Exception"/>
+<fullyQualifiedTypeName name="java.sql.PreparedStatement"/>
+<fullyQualifiedTypeName name="py.com.qa.configs.Configuracion"/>
+<fullyQualifiedTypeName name="py.com.qa.exceptions.AZPAException"/>
+<fullyQualifiedTypeName name="py.com.qa.exceptions.Code"/>
+<fullyQualifiedTypeName name="javax.swing.event.ListSelectionEvent"/>
+<fullyQualifiedTypeName name="javax.swing.ListSelectionModel"/>
+<fullyQualifiedTypeName name="javax.swing.JViewport"/>
+<fullyQualifiedTypeName name="java.lang.Override"/>
 </qualifiedTypeNameHistroy>
