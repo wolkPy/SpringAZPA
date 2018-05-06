@@ -1,0 +1,4 @@
+1525611760659	Rename method 'refrezcarDetalleMovimiento'
+1525613123109	Rename local variable 'k'
+1525615079616	Rename field 'columnaIsFormula'
+1525616186309	Extract method 'recorrerTabla'

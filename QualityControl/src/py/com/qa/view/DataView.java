@@ -43,6 +43,14 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 	private Planilla planilla;
 	private String formula;
 	/******************************************************/
+	/************ CONOCER POSICION EN TABLA ***************/
+	/******************************************************/
+	private static int columna1;
+	private static int columnaResultado;
+	private static int columnaVariable;
+	private static int columnaFormula;
+	private static int columnaEsFormula;
+	/******************************************************/
 	/************ PARSEAR DE DATE A STRING ****************/
 	/******************************************************/
 	private String formato;
@@ -67,12 +75,7 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		/******** RECUPERAMOS EL MODELO DE LA PLANILLA *********/
 		/*******************************************************/
 		initialize();
-		createAndShowGUI();
-	}
-
-	private void createAndShowGUI() {
 		createAndAddComponentToPrincipalPane(this);
-
 	}
 
 	@SuppressWarnings("static-access")
@@ -98,15 +101,7 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}
-		/*
-		 * 
-		 * 
-		 * 
-		 * 
-		 * COMENTAR
-		 * 
-		 */
-		/* SE DEBE TENER LOS FILTROS PARA EL QUERY */
+
 		String codEmpresa = Configuracion.CODEMPRESA;
 		String codSucursal = Configuracion.CODSUCURSAL;
 		/* VERIFICAMOS SI EXISTE PLANILLA CARGADA EN FECHA SELECCIONADA */
@@ -190,30 +185,22 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		principalPane.setLayout(new BorderLayout());
 		JScrollPane centerPane = null;
 		sqlData = null;
-		/*
-		 * DEPENDIENDO SI ENCONTRO O NO LA PLANILLA REGISTRADA SE CARGA O NO UNA NUEVA
-		 * PLANILLA
-		 */
-		System.out.println("sql = " + sql);
+		/** DEPENDIENDO SI ENCUENTRA O NO LA PLANILLA REGISTRADA **/
+		/*********** SE CARGA O NO UNA NUEVA PLANILLA *************/
 		ew = new ExcelWriter(sql);
-		boolean isVisible = false;
-		boolean isFormula = false;
-		boolean isOK = false;
-		Object aValue = null;
 		if (ew.getData().length != 0 && ew.getColumnNames().length != 0) {
 			sqlData = new JTable(ew.getData(), ew.getColumnNames()) {
-				/**
-				 * 
-				 */
 				private static final long serialVersionUID = 1L;
 
 				public boolean isCellEditable(int row, int column) {
-					/** SE SABE QUE LA COLUMNA 7 (0,..,6) ES EL CAMPO "ES_FORMULA" **/
-					/* POR ENDE SE ASUME DIRECTAMENTE LA PREGUNTA SI ES FORMULA O NO */
-					if (sqlData.getValueAt(row, 6).equals("S")) {
+					/** SI LA COLUMNA DE ESA FILA ES FORMULA ENTONCES **/
+					/***************** NO ES EDITABLE ******************/
+					if (sqlData.getValueAt(row, columnaEsFormula).equals("S")) {
 						return false;
 					}
-					if (column <= 10) {
+					/** SI LA COLUMNA ES MENOR A LA COLUMNA 1 ENTONCES **/
+					/****************** NO ES EDITABLE ******************/
+					if (column < columna1) {
 						return false;
 					}
 					return true;
@@ -225,32 +212,59 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 			centerPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, sqlData.getTableHeader());
 			principalPane.add(centerPane);
 		}
+		/************** CONOCER TABLA **************/
+		/** SABER DONDE SE ENCUENTRA CADA COLUMNA **/
+		conocerTabla();
 		/* RECORRER TABLA */
+		recorrerTabla();
+
+		centerPane.addKeyListener(this);
+		sqlData.addKeyListener(this);
+		principalPane.addKeyListener(this);
+		getContentPane().addKeyListener(this);
+		this.add(principalPane, BorderLayout.CENTER);
+	}
+
+	private void recorrerTabla() {
+		boolean isVisible = false;
+		boolean isFormula = false;
+		boolean isOK = false;
+		Object aValue = null;
 		for (int k = 0; k < sqlData.getRowCount(); k++) {
 			for (int i = 0; i < sqlData.getColumnCount(); i++) {
 				/***********************************************/
 				/* SETEAR DE ACUERDO AL NOMBRE DE LAS COLUMNAS */
 				/**** OCULTAR CAMPOS QUE NO SE DEBEN MOSTRAR ***/
 				/***********************************************/
-
 				/***********************************************/
 				/* MIENTRAS NO LLEGUE A VAR_ORDEN SE OCULTARAN */
 				/************ TODAS LAS COLUMNAS ***************/
+
 				if (sqlData.getColumnName(i).toUpperCase().equals("ORDEN")) {
 					isVisible = true;
 				}
-				if (sqlData.getColumnName(i).toUpperCase().equals("1")) {
+				// if (sqlData.getColumnName(i).toUpperCase().equals("1")) {
+				// isOK = true;
+				// }
+				// if (sqlData.getColumnName(i).toUpperCase().equals("RESULTADO")) {
+				// isOK = false;
+				// }
+				if (i == columna1) {
 					isOK = true;
-				}
-				if (sqlData.getColumnName(i).toUpperCase().equals("RESULTADO")) {
+				} else if (i == columnaResultado) {
 					isOK = false;
 				}
-				if (sqlData.getColumnName(i).toUpperCase().equals("ES_FORMULA")) {
-					if (sqlData.getValueAt(k, i).equals('S')) {
-						isFormula = true;
-					} else {
-						isFormula = false;
-					}
+				// if (sqlData.getColumnName(i).toUpperCase().equals("ES_FORMULA")) {
+				// if (sqlData.getValueAt(k, i).equals('S')) {
+				// isFormula = true;
+				// } else {
+				// isFormula = false;
+				// }
+				// }
+				if (sqlData.getValueAt(k, columnaEsFormula).equals("S")) {
+					isFormula = true;
+				} else {
+					isFormula = false;
 				}
 
 				if (isFormula) {
@@ -262,6 +276,7 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 					sqlData.getColumn(sqlData.getColumnName(i)).setMinWidth(0);
 					sqlData.getColumn(sqlData.getColumnName(i)).setMaxWidth(0);
 				}
+
 				if (isOK) {
 					CallableStatement sentencia;
 					/****************************************************/
@@ -284,18 +299,11 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 					} catch (SQLException e1) {
 						e1.printStackTrace();
 					}
-
 					sqlData.setValueAt(aValue, k, i);
 				}
+
 			}
 		}
-		centerPane.addKeyListener(this);
-		sqlData.addKeyListener(this);
-		principalPane.addKeyListener(this);
-
-		getContentPane().addKeyListener(this);
-
-		this.add(principalPane, BorderLayout.CENTER);
 	}
 
 	@Override
@@ -375,49 +383,22 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		}
 	}
 
-	// private void refrezcarDetalleMovimiento() {
-	// DetalleLanzamiento dLan = null;
-	// for (int k = 0; k < sqlData.getRowCount(); k++) {
-	// boolean isOk = false;
-	// boolean isFormula = false;
-	// // long codVariable;
-	// // String value = null;
-	// // int movCol;
-	// int indiceCodVariable = 0;
-	// String sentenciaFormula;
-	// String nvoValor = null;
-	// for (int i = 0; i < sqlData.getColumnCount(); i++) {
-	// System.out.println(sqlData.getColumnName(i).toString());
-	// /******************************************************************/
-	// /** AL ENCONTRAR LA COLUMNA 1 EMPIEZA A INSERTAR LOS MOVIMIENTOS **/
-	// /******************************************************************/
-	// if (sqlData.getColumnName(i).toString().equals("1")) {
-	// isOk = true;
-	// }
-	// if (sqlData.getColumnName(i).toString().equals("RESULTADO")) {
-	// isOk = false;
-	// }
-	// if (sqlData.getColumnName(i).toString().equals("COD_VARIABLE")) {
-	// indiceCodVariable = i;
-	// }
-	// if (sqlData.getColumnName(i).toUpperCase().equals("ES_FORMULA")) {
-	// if (sqlData.getValueAt(k, i).equals('S')) {
-	// isFormula = true;
-	// } else {
-	// isFormula = false;
-	// }
-	// }
-	// if (isOk) {
-	// if (isFormula) {
-	// /* SI ES FORMULA ENTONCES SE RECUPERA EN UN STRING LA SENTENCIA */
-	// sentenciaFormula = "";
-	// nvoValor = "";
-	// sqlData.setValueAt(nvoValor, k, i);
-	// }
-	// }
-	// }
-	// }
-	// }
+	/* RECORRER LAS COLUMNAS PARA SABER EL VALOR DE CADA UNA Y EVITAR PREGUNTAR */
+	private void conocerTabla() {
+		for (int i = 0; i < sqlData.getColumnCount(); i++) {
+			if (sqlData.getColumnName(i).toString().equals("1")) {
+				columna1 = i;
+			} else if (sqlData.getColumnName(i).toString().equals("RESULTADO")) {
+				columnaResultado = i;
+			} else if (sqlData.getColumnName(i).toString().equals("COD_VARIABLE")) {
+				columnaVariable = i;
+			} else if (sqlData.getColumnName(i).toUpperCase().equals("ES_FORMULA")) {
+				columnaEsFormula = i;
+			} else if (sqlData.getColumnName(i).toUpperCase().equals("FORMULA")) {
+				columnaFormula = i;
+			}
+		}
+	}
 
 	private void insertarDetalleMovimiento() {
 		DetalleLanzamiento dLan = null;
@@ -528,4 +509,25 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		}
 		this.dispose();
 	}
+
+	public int getColumna1() {
+		return columna1;
+	}
+
+	public int getColumnaResultado() {
+		return columnaResultado;
+	}
+
+	public int getColumnaVariable() {
+		return columnaVariable;
+	}
+
+	public int getColumnaFormula() {
+		return columnaFormula;
+	}
+
+	public int getColumnaIsFormula() {
+		return columnaEsFormula;
+	}
+
 }
