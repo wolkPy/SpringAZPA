@@ -12,18 +12,18 @@ import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JViewport;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.InternalFrameEvent;
 
 import py.com.qa.clases.DetalleLanzamiento;
 import py.com.qa.clases.ExcelWriter;
 import py.com.qa.clases.Lanzamiento;
 import py.com.qa.clases.Planilla;
 import py.com.qa.configs.Configuracion;
+import py.com.qa.configs.MiRender;
 
 public class DataView extends AbstractInternalFrame implements KeyListener {
 	/* CONSTANTES */
@@ -41,6 +41,7 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 	private JTable sqlData;
 	private int tamanhoCol;
 	private Planilla planilla;
+	private String formula;
 	/******************************************************/
 	/************ PARSEAR DE DATE A STRING ****************/
 	/******************************************************/
@@ -138,23 +139,28 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 			/****************** SE CAMBIA LA SENTENCIA DE CONSULTA *********************/
 			/***************************************************************************/
 			if (planilla != null) {
-				CallableStatement sentencia;
-				/****************************************************/
-				/** SE RECUPERA QUERY CON FUNCION DE BASE DE DATOS **/
-				/****************************************************/
-				try {
-					sentencia = con.prepareCall("{?=call fnc_devu_qa_lab_mov(?,?,?,?)}");
-					sentencia.registerOutParameter(1, Types.VARCHAR);
-					sentencia.setString(2, codEmpresa);
-					sentencia.setString(3, codSucursal);
-					sentencia.setLong(4, planilla.getCodPlanilla());
-					sentencia.setLong(5, lan.getCodMovimiento());
-					sentencia.executeQuery();
-					this.sql = sentencia.getString(1);
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
+				crearSentencia(codEmpresa, codSucursal);
 			}
+		}
+	}
+
+	@SuppressWarnings("static-access")
+	private void crearSentencia(String codEmpresa, String codSucursal) {
+		CallableStatement sentencia;
+		/****************************************************/
+		/** SE RECUPERA QUERY CON FUNCION DE BASE DE DATOS **/
+		/****************************************************/
+		try {
+			sentencia = con.prepareCall("{?=call fnc_devu_qa_lab_mov(?,?,?,?)}");
+			sentencia.registerOutParameter(1, Types.VARCHAR);
+			sentencia.setString(2, codEmpresa);
+			sentencia.setString(3, codSucursal);
+			sentencia.setLong(4, planilla.getCodPlanilla());
+			sentencia.setLong(5, lan.getCodMovimiento());
+			sentencia.executeQuery();
+			this.sql = sentencia.getString(1);
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -182,9 +188,7 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		/** Principal Panel **/
 		JPanel principalPane = new JPanel();
 		principalPane.setLayout(new BorderLayout());
-
 		JScrollPane centerPane = null;
-
 		sqlData = null;
 		/*
 		 * DEPENDIENDO SI ENCONTRO O NO LA PLANILLA REGISTRADA SE CARGA O NO UNA NUEVA
@@ -193,6 +197,9 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		System.out.println("sql = " + sql);
 		ew = new ExcelWriter(sql);
 		boolean isVisible = false;
+		boolean isFormula = false;
+		boolean isOK = false;
+		Object aValue = null;
 		if (ew.getData().length != 0 && ew.getColumnNames().length != 0) {
 			sqlData = new JTable(ew.getData(), ew.getColumnNames()) {
 				/**
@@ -200,30 +207,22 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 				 */
 				private static final long serialVersionUID = 1L;
 
-				@Override
-				public boolean isCellEditable(int rowIndex, int colIndex) {
-					return colIndex != 0 && colIndex != 1 && colIndex != 2 && colIndex != 3 && colIndex != 4
-							&& colIndex != 5;
-				}
-
-				/**/
-				@Override
-				public void valueChanged(ListSelectionEvent e) {
-					super.valueChanged(e);
-					checkSelection(false);
+				public boolean isCellEditable(int row, int column) {
+					/** SE SABE QUE LA COLUMNA 7 (0,..,6) ES EL CAMPO "ES_FORMULA" **/
+					/* POR ENDE SE ASUME DIRECTAMENTE LA PREGUNTA SI ES FORMULA O NO */
+					if (sqlData.getValueAt(row, 6).equals("S")) {
+						return false;
+					}
+					if (column <= 10) {
+						return false;
+					}
+					return true;
 				}
 			};
+			sqlData.setDefaultRenderer(Object.class, new MiRender());
 			sqlData.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-			//
-			sqlData.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-			//
 			centerPane = new JScrollPane(sqlData);
-			JViewport viewport = new JViewport();
-			viewport.setView(sqlData);
-			viewport.setPreferredSize(sqlData.getPreferredSize());
-			centerPane.setRowHeaderView(viewport);
 			centerPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, sqlData.getTableHeader());
-			//
 			principalPane.add(centerPane);
 		}
 		/* RECORRER TABLA */
@@ -240,19 +239,54 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 				if (sqlData.getColumnName(i).toUpperCase().equals("ORDEN")) {
 					isVisible = true;
 				}
+				if (sqlData.getColumnName(i).toUpperCase().equals("1")) {
+					isOK = true;
+				}
+				if (sqlData.getColumnName(i).toUpperCase().equals("RESULTADO")) {
+					isOK = false;
+				}
+				if (sqlData.getColumnName(i).toUpperCase().equals("ES_FORMULA")) {
+					if (sqlData.getValueAt(k, i).equals('S')) {
+						isFormula = true;
+					} else {
+						isFormula = false;
+					}
+				}
+
+				if (isFormula) {
+					this.formula = sqlData.getValueAt(k, i).toString();
+					this.formula.replaceAll("getAnalise(", "getAnalise(" + "");
+				}
 				if (!isVisible) {
 					sqlData.getColumn(sqlData.getColumnName(i)).setWidth(0);
 					sqlData.getColumn(sqlData.getColumnName(i)).setMinWidth(0);
 					sqlData.getColumn(sqlData.getColumnName(i)).setMaxWidth(0);
 				}
-				// else {
-				/*****************************/
-				/* SETEAR TAMAÑO DE COLUMNAS */
-				/*****************************/
-				// sqlData.getColumn(sqlData.getColumnName(i)).setWidth(this.tamanhoCol);
-				// sqlData.getColumn(sqlData.getColumnName(i)).setMinWidth(30);
-				// sqlData.getColumn(sqlData.getColumnName(i)).setMaxWidth(30);
-				// }
+				if (isOK) {
+					CallableStatement sentencia;
+					/****************************************************/
+					/** SE RECUPERA QUERY CON FUNCION DE BASE DE DATOS **/
+					/****************************************************/
+					try {
+						/*
+						 * LLAMAR A UNA FUNCION QUE HAGA EL EXECUTE IMMEDIATE DEL STRING " DENTRO DEL
+						 * STRING DEBE HABER 1 A MAS FORMULAS LAS CUALES DEBEN EXISTIR EN
+						 */
+						sentencia = con.prepareCall("{?=call fnc_devu_qa_lab_value(?,?,?,?)}");
+						sentencia.registerOutParameter(1, Types.VARCHAR);
+						sentencia.setString(2, Configuracion.CODEMPRESA);
+						sentencia.setString(3, Configuracion.CODSUCURSAL);
+						sentencia.setLong(4, planilla.getCodPlanilla());
+						sentencia.setLong(5, lan.getCodMovimiento());
+						sentencia.executeQuery();
+						ew = new ExcelWriter(sentencia.getString(1));
+						ew.writeExcel();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+
+					sqlData.setValueAt(aValue, k, i);
+				}
 			}
 		}
 		centerPane.addKeyListener(this);
@@ -264,140 +298,206 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		this.add(principalPane, BorderLayout.CENTER);
 	}
 
-	private void checkSelection(boolean isFixedTable) {
-		int fixedSelectedIndex = sqlData.getSelectedRow();
-		int selectedIndex = sqlData.getSelectedRow();
-		if (fixedSelectedIndex != selectedIndex) {
-			if (isFixedTable) {
-				sqlData.setRowSelectionInterval(fixedSelectedIndex, fixedSelectedIndex);
-			} else {
-				sqlData.setRowSelectionInterval(selectedIndex, selectedIndex);
-			}
-		}
-	}
-
 	@Override
 	public void keyTyped(KeyEvent e) {
 		System.out.println("keyTyped" + e.getKeyCode());
 	}
 
+	@SuppressWarnings("static-access")
 	@Override
 	public void keyPressed(KeyEvent e) {
 		System.out.println("keyPressed" + e.getKeyCode());
+		if (e.getKeyCode() == KeyEvent.VK_F5) {
+			/*******************************************************/
+			/*************** REFREZCAR MATRIZ **********************/
+			/*******************************************************/
+			// refrezcarDetalleMovimiento();
+		}
 		if (e.getKeyCode() == KeyEvent.VK_F10) {
-			System.out.println("1");
-			/*******************************************************/
-			/************** VERIFICAR LANZAMIENTO ******************/
-			/*******************************************************/
-			verificarPlanillaCargada(Configuracion.CODEMPRESA, planilla.getCodPlanilla(), this.fecha);
-			System.out.println("2");
-			/*******************************************************/
-			/************ INSERTAR NUEVO LANZAMIENTO ***************/
-			/*************** EN CASO DE QUE NO EXISTA **************/
-			/*******************************************************/
-			if (lan == null) {
-				System.out.println("3");
-				lan = new Lanzamiento();
-				lan.setCodEmpresa(Configuracion.CODEMPRESA);
-				lan.setCodPlanilla(planilla.getCodPlanilla());
-				lan.setFecha(sdf.format(date));
-				/**********************************************************/
-				/****** AL INSERTAR RETORNA EL CODIGO DEL MOVIMIENTO ******/
-				/**********************************************************/
-				lan.setCodPlanilla(lan.insertar());
-				/**********************************************************/
-				/************ RECORRER LOS REGISTROS - GUARDAR ************/
-				/**********************************************************/
-				System.out.println("4");
-				DetalleLanzamiento dLan = null;
-				for (int k = 0; k < sqlData.getRowCount(); k++) {
-					boolean isOk = false;
-					long codVariable;
-					String value = null;
-					int movCol;
-					int indiceCodVariable = 0;
+			/* VERIFICAR/GUARDAR/ACTUALIZAR MOVIMIENTO */
+			guardar();
+		}
+		if (e.getKeyCode() == KeyEvent.VK_F11) {
+			/* VERIFICAR/GUARDAR/ACTUALIZAR MOVIMIENTO */
+			CallableStatement sentencia;
+			/****************************************************/
+			/** SE RECUPERA QUERY CON FUNCION DE BASE DE DATOS **/
+			/****************************************************/
+			try {
+				sentencia = con.prepareCall("{?=call fnc_devu_qa_lab_excel(?,?,?,?)}");
+				sentencia.registerOutParameter(1, Types.VARCHAR);
+				sentencia.setString(2, Configuracion.CODEMPRESA);
+				sentencia.setString(3, Configuracion.CODSUCURSAL);
+				sentencia.setLong(4, planilla.getCodPlanilla());
+				sentencia.setLong(5, lan.getCodMovimiento());
+				sentencia.executeQuery();
+				ew = new ExcelWriter(sentencia.getString(1));
+				ew.writeExcel();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
 
-					for (int i = 0; i < sqlData.getColumnCount(); i++) {
-						System.out.println(sqlData.getColumnName(i).toString());
-						/******************************************************************/
-						/** AL ENCONTRAR LA COLUMNA 1 EMPIEZA A INSERTAR LOS MOVIMIENTOS **/
-						/******************************************************************/
-						if (sqlData.getColumnName(i).toString().equals("1")) {
-							isOk = true;
-						}
-						if (sqlData.getColumnName(i).toString().equals("RESULTADO")) {
-							isOk = false;
-						}
-						if (sqlData.getColumnName(i).toString().equals("COD_VARIABLE")) {
-							indiceCodVariable = i;
-						}
-						if (isOk) {
-							if (sqlData.getValueAt(k, i) == null) {
-								value = "";
-							} else {
-								System.out.println(sqlData.getValueAt(k, i).toString());
-								value = sqlData.getValueAt(k, i).toString();
-							}
-							codVariable = Long.parseLong(sqlData.getValueAt(k, indiceCodVariable).toString());
-							movCol = Integer.parseInt(sqlData.getColumnName(i).toString());
-							dLan = new DetalleLanzamiento(lan.getCodEmpresa(), lan.getCodMovimiento(), codVariable,
-									movCol, value.replace(".", ","));
-							dLan.insertar();
-						}
-					}
+		}
+		if (e.getKeyCode() == KeyEvent.VK_F12) {
+			/* GUARDAR Y/O SALIR DE PLANILLA */
+			salir();
+		}
+	}
+
+	private void guardar() {
+		/*******************************************************/
+		/************** VERIFICAR LANZAMIENTO ******************/
+		/*******************************************************/
+		verificarPlanillaCargada(Configuracion.CODEMPRESA, planilla.getCodPlanilla(), this.fecha);
+		/*******************************************************/
+		/************ INSERTAR NUEVO LANZAMIENTO ***************/
+		/*************** EN CASO DE QUE NO EXISTA **************/
+		/*******************************************************/
+		if (lan == null) {
+			/**********************************************************/
+			/****** AL INSERTAR RETORNA EL CODIGO DEL MOVIMIENTO ******/
+			/**********************************************************/
+			lan = new Lanzamiento();
+			lan.setCodEmpresa(Configuracion.CODEMPRESA);
+			lan.setCodPlanilla(planilla.getCodPlanilla());
+			lan.setFecha(sdf.format(date));
+			lan.setCodPlanilla(lan.insertar());
+			/**********************************************************/
+			/************ RECORRER LOS REGISTROS - GUARDAR ************/
+			/**********************************************************/
+			insertarDetalleMovimiento();
+		} else {
+			System.out.println("SE DEBE ACTUALIZAR-.....");
+			/*******************************************************/
+			/** EN CASO DE QUE EXISTA ENTONCES SE DEBE ACTUALIZAR **/
+			/*******************************************************/
+			actualizarDetalleMovimiento();
+		}
+	}
+
+	// private void refrezcarDetalleMovimiento() {
+	// DetalleLanzamiento dLan = null;
+	// for (int k = 0; k < sqlData.getRowCount(); k++) {
+	// boolean isOk = false;
+	// boolean isFormula = false;
+	// // long codVariable;
+	// // String value = null;
+	// // int movCol;
+	// int indiceCodVariable = 0;
+	// String sentenciaFormula;
+	// String nvoValor = null;
+	// for (int i = 0; i < sqlData.getColumnCount(); i++) {
+	// System.out.println(sqlData.getColumnName(i).toString());
+	// /******************************************************************/
+	// /** AL ENCONTRAR LA COLUMNA 1 EMPIEZA A INSERTAR LOS MOVIMIENTOS **/
+	// /******************************************************************/
+	// if (sqlData.getColumnName(i).toString().equals("1")) {
+	// isOk = true;
+	// }
+	// if (sqlData.getColumnName(i).toString().equals("RESULTADO")) {
+	// isOk = false;
+	// }
+	// if (sqlData.getColumnName(i).toString().equals("COD_VARIABLE")) {
+	// indiceCodVariable = i;
+	// }
+	// if (sqlData.getColumnName(i).toUpperCase().equals("ES_FORMULA")) {
+	// if (sqlData.getValueAt(k, i).equals('S')) {
+	// isFormula = true;
+	// } else {
+	// isFormula = false;
+	// }
+	// }
+	// if (isOk) {
+	// if (isFormula) {
+	// /* SI ES FORMULA ENTONCES SE RECUPERA EN UN STRING LA SENTENCIA */
+	// sentenciaFormula = "";
+	// nvoValor = "";
+	// sqlData.setValueAt(nvoValor, k, i);
+	// }
+	// }
+	// }
+	// }
+	// }
+
+	private void insertarDetalleMovimiento() {
+		DetalleLanzamiento dLan = null;
+		for (int k = 0; k < sqlData.getRowCount(); k++) {
+			boolean isOk = false;
+			long codVariable;
+			String value = null;
+			int movCol;
+			int indiceCodVariable = 0;
+
+			for (int i = 0; i < sqlData.getColumnCount(); i++) {
+				System.out.println(sqlData.getColumnName(i).toString());
+				/******************************************************************/
+				/** AL ENCONTRAR LA COLUMNA 1 EMPIEZA A INSERTAR LOS MOVIMIENTOS **/
+				/******************************************************************/
+				if (sqlData.getColumnName(i).toString().equals("1")) {
+					isOk = true;
 				}
-			} else {
-				System.out.println("SE DEBE ACTUALIZAR-.....");
-				/*******************************************************/
-				/** EN CASO DE QUE EXISTA ENTONCES SE DEBE ACTUALIZAR **/
-				/*******************************************************/
-				System.out.println("5");
-				DetalleLanzamiento dLan = null;
-				for (int k = 0; k < sqlData.getRowCount(); k++) {
-					boolean isOk = false;
-					long codVariable;
-					String value = null;
-					int movCol;
-					int indiceCodVariable = 0;
-
-					for (int i = 0; i < sqlData.getColumnCount(); i++) {
-						/******************************************************************/
-						/** AL ENCONTRAR LA COLUMNA 1 EMPIEZA A INSERTAR LOS MOVIMIENTOS **/
-						/******************************************************************/
-						if (sqlData.getColumnName(i).toString().equals("1")) {
-							isOk = true;
-						}
-						if (sqlData.getColumnName(i).toString().equals("RESULTADO")) {
-							isOk = false;
-						}
-						if (sqlData.getColumnName(i).toString().equals("COD_VARIABLE")) {
-							indiceCodVariable = i;
-						}
-						if (isOk) {
-							if (sqlData.getValueAt(k, i) == null) {
-								value = "";
-							} else {
-								System.out.println(sqlData.getValueAt(k, i).toString());
-								value = sqlData.getValueAt(k, i).toString();
-							}
-							System.out.println(Long.parseLong(sqlData.getValueAt(k, indiceCodVariable).toString()));
-							codVariable = Long.parseLong(sqlData.getValueAt(k, indiceCodVariable).toString());
-							System.out.println(Integer.parseInt(sqlData.getColumnName(i).toString()));
-							movCol = Integer.parseInt(sqlData.getColumnName(i).toString());
-
-							dLan = new DetalleLanzamiento(lan.getCodEmpresa(), lan.getCodMovimiento(), codVariable,
-									movCol, value.replace(".", ","));
-							dLan.actualizar();
-						}
+				if (sqlData.getColumnName(i).toString().equals("RESULTADO")) {
+					isOk = false;
+				}
+				if (sqlData.getColumnName(i).toString().equals("COD_VARIABLE")) {
+					indiceCodVariable = i;
+				}
+				if (isOk) {
+					if (sqlData.getValueAt(k, i) == null) {
+						value = "";
+					} else {
+						value = sqlData.getValueAt(k, i).toString();
 					}
+					codVariable = Long.parseLong(sqlData.getValueAt(k, indiceCodVariable).toString());
+					movCol = Integer.parseInt(sqlData.getColumnName(i).toString());
+					dLan = new DetalleLanzamiento(lan.getCodEmpresa(), lan.getCodMovimiento(), codVariable, movCol,
+							value.replace(".", ","));
+					dLan.insertar();
 				}
 			}
 		}
-		if (e.getKeyCode() == KeyEvent.VK_F12) {
-			System.out.println("keyPressed" + e.getKeyCode());
-			/* ANTES DE CERRAR SE DEBE PREGUNTAR */
-			/* SI SE DESEA GUARDAR LOS REGISTROS. */
-			this.dispose();
+	}
+
+	private void actualizarDetalleMovimiento() {
+		DetalleLanzamiento dLan = null;
+		Object celValue = null;
+		for (int k = 0; k < sqlData.getRowCount(); k++) {
+			boolean isOk = false;
+			long codVariable;
+			String value = null;
+			int movCol;
+			int indiceCodVariable = 0;
+
+			for (int i = 0; i < sqlData.getColumnCount(); i++) {
+				/******************************************************************/
+				/** AL ENCONTRAR LA COLUMNA 1 EMPIEZA A INSERTAR LOS MOVIMIENTOS **/
+				/******************************************************************/
+				if (sqlData.getColumnName(i).toString().equals("1")) {
+					isOk = true;
+				}
+				if (sqlData.getColumnName(i).toString().equals("RESULTADO")) {
+					isOk = false;
+				}
+
+				if (sqlData.getColumnName(i).toString().equals("COD_VARIABLE")) {
+					indiceCodVariable = i;
+				}
+
+				if (isOk) {
+					celValue = sqlData.getValueAt(k, i);
+					System.out.println(celValue);
+					if (celValue != null) {
+						value = sqlData.getValueAt(k, i).toString();
+					} else {
+						value = "";
+					}
+					codVariable = Long.parseLong(sqlData.getValueAt(k, indiceCodVariable).toString());
+					movCol = Integer.parseInt(sqlData.getColumnName(i).toString());
+					dLan = new DetalleLanzamiento(lan.getCodEmpresa(), lan.getCodMovimiento(), codVariable, movCol,
+							value.replace(".", ","));
+					dLan.actualizar();
+				}
+			}
 		}
 	}
 
@@ -412,5 +512,20 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 
 	public void setTamanhoCol(int tamanhoCol) {
 		this.tamanhoCol = tamanhoCol;
+	}
+
+	@Override
+	public void internalFrameClosing(InternalFrameEvent e) {
+		salir();
+	}
+
+	private void salir() {
+		/* ANTES DE CERRAR SE DEBE PREGUNTAR */
+		/* SI SE DESEA GUARDAR LOS REGISTROS. */
+		if (JOptionPane.showConfirmDialog(null, "Guardar y salir de la planilla?", "Confirmar salida",
+				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+			guardar();
+		}
+		this.dispose();
 	}
 }

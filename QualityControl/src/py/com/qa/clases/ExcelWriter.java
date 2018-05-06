@@ -1,15 +1,29 @@
 package py.com.qa.clases;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import py.com.qa.configs.Configuracion;
 
 /**
- *   
+ * 
  * @author lolmedo
  * @fecha 27/04/2018
  */
@@ -55,6 +69,55 @@ public class ExcelWriter {
 			rs.close();
 			stmt.close();
 		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void writeExcel() {
+		XSSFWorkbook workbook = new XSSFWorkbook();
+		XSSFSheet sheet = workbook.createSheet();
+		Row row;
+		Cell cell;
+		// Exportar primeramente los titulos de columnas
+		row = sheet.createRow(0);
+		for (int k = 1; k <= numeroColumnas; k++) {
+			cell = row.createCell(k - 1);
+			cell.setCellValue(columnNames[k - 1]);
+		}
+
+		/** a partir de la fila 2 escribe los datos. **/
+		BigDecimal bd;
+		String bdS;
+		for (int j = 1; j <= numeroFilas; j++) {
+			row = sheet.createRow(j);
+			for (int k = 1; k <= numeroColumnas; k++) {
+				cell = row.createCell(k - 1);
+				if (data[j - 1][k - 1] != null) {
+					if (data[j - 1][k - 1] instanceof java.math.BigDecimal) {
+						bd = (BigDecimal) data[j - 1][k - 1];
+						bdS = String.valueOf(bd.doubleValue());
+						cell.setCellValue(bdS);
+					} else if (data[j - 1][k - 1] instanceof String) {
+						cell.setCellValue((String) data[j - 1][k - 1]);
+					} else if (data[j - 1][k - 1] instanceof Integer) {
+						cell.setCellValue((Integer) data[j - 1][k - 1]);
+					}
+				}
+			}
+		}
+		try {
+			JFileChooser selector = new JFileChooser();
+			FileFilter filter = new FileNameExtensionFilter("Excel file", "xls", "xlsx");
+			selector.addChoosableFileFilter(filter);
+
+			int op = selector.showSaveDialog(new JFrame());
+			if (op == JFileChooser.APPROVE_OPTION) {
+				File file = selector.getSelectedFile();
+				FileOutputStream fos = new FileOutputStream(file + ".xlsx");
+				workbook.write(fos);
+				workbook.close();
+			}
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}

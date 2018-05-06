@@ -1,1 +1,8 @@
 1525052630406	Delete element
+1525095262356	Extract method 'actualizarMovimiento'
+1525095315035	Extract method 'insertarDetalleMovimiento'
+1525095326895	Rename method 'actualizarMovimiento'
+1525096765740	Extract method 'insertarOActualizarMovimiento'
+1525102049306	Extract method 'salir'
+1525102086717	Rename method 'insertarOActualizarMovimiento'
+1525118093307	Delete element

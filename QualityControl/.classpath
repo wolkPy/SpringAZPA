@@ -5,5 +5,12 @@
 	<classpathentry kind="lib" path="src/lib/oracle-ojdbc6-11.2.0.3.0.jar"/>
 	<classpathentry kind="lib" path="src/lib/jcalendar-1.4.jar"/>
 	<classpathentry kind="lib" path="src/lib/iconos.jar"/>
+	<classpathentry kind="lib" path="src/lib/poi-ooxml-3.15.jar"/>
+	<classpathentry kind="lib" path="src/lib/poi-3.16-beta2.jar"/>
+	<classpathentry kind="lib" path="src/lib/poi-ooxml-schemas-3.15.jar"/>
+	<classpathentry kind="lib" path="src/lib/xmlbeans-2.6.0.jar"/>
+	<classpathentry kind="lib" path="src/lib/commons-collections4-4.1.jar"/>
+	<classpathentry kind="lib" path="src/lib/commons-io-2.5.jar"/>
+	<classpathentry kind="lib" path="src/lib/commons-lang3-3.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

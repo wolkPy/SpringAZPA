@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-<fullyQualifiedTypeName name="javax.swing.JScrollPane"/>
-<fullyQualifiedTypeName name="py.com.qa.conectivity.ManejadorConexiones"/>
-<fullyQualifiedTypeName name="javax.swing.tree.MutableTreeNode"/>
-<fullyQualifiedTypeName name="javax.swing.tree.TreeNode"/>
-<fullyQualifiedTypeName name="javax.swing.tree.DefaultTreeModel"/>
-<fullyQualifiedTypeName name="javax.swing.tree.DefaultMutableTreeNode"/>
-<fullyQualifiedTypeName name="javax.swing.event.TreeSelectionEvent"/>
 <fullyQualifiedTypeName name="java.awt.BorderLayout"/>
 <fullyQualifiedTypeName name="com.toedter.calendar.JCalendar"/>
 <fullyQualifiedTypeName name="java.util.GregorianCalendar"/>
@@ -53,11 +46,18 @@
 <fullyQualifiedTypeName name="py.com.qa.clases.Reloj"/>
 <fullyQualifiedTypeName name="java.lang.Exception"/>
 <fullyQualifiedTypeName name="java.sql.PreparedStatement"/>
-<fullyQualifiedTypeName name="py.com.qa.configs.Configuracion"/>
 <fullyQualifiedTypeName name="py.com.qa.exceptions.AZPAException"/>
 <fullyQualifiedTypeName name="py.com.qa.exceptions.Code"/>
 <fullyQualifiedTypeName name="javax.swing.event.ListSelectionEvent"/>
 <fullyQualifiedTypeName name="javax.swing.ListSelectionModel"/>
 <fullyQualifiedTypeName name="javax.swing.JViewport"/>
 <fullyQualifiedTypeName name="java.lang.Override"/>
+<fullyQualifiedTypeName name="javax.swing.JOptionPane"/>
+<fullyQualifiedTypeName name="javax.swing.table.DefaultTableModel"/>
+<fullyQualifiedTypeName name="java.awt.Color"/>
+<fullyQualifiedTypeName name="javax.swing.table.TableCellRenderer"/>
+<fullyQualifiedTypeName name="java.net.URL"/>
+<fullyQualifiedTypeName name="javax.swing.ImageIcon"/>
+<fullyQualifiedTypeName name="py.com.qa.configs.Configuracion"/>
+<fullyQualifiedTypeName name="java.math.BigDecimal"/>
 </qualifiedTypeNameHistroy>

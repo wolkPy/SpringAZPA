@@ -60,6 +60,7 @@ public class AuxiliarView {
 
 		descripcionTxt = new JTextField();
 		descripcionTxt.setFont(new Font("Verdana", Font.PLAIN, 12));
+		
 		descripcionTxt.setBounds(150, 13, 279, 22);
 		panel.add(descripcionTxt);
 		descripcionTxt.setColumns(10);

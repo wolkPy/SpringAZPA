@@ -12,7 +12,7 @@ import py.com.qa.configs.Configuracion;
 public class DetalleLanzamiento {
 	/* CONSTANTES */
 	private static final String sqlInsert = "insert into qa_lab_mov_deta(cod_empresa, cod_movimiento, cod_variable, mov_columna, mov_valor) values (?,?,?,?,?)";
-	private static final String sqlUpdate = "update qa_lab_mov_deta mov_valor = ? where cod_empresa = ? and cod_movimiento = ? and cod_variable = ? and mov_columna = ?";
+	private static final String sqlUpdate = "update qa_lab_mov_deta set mov_valor = ? where cod_empresa = ? and cod_movimiento = ? and cod_variable = ? and mov_columna = ?";
 	private Connection con = Configuracion.CON;
 
 	/* VARIABLES */

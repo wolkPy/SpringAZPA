@@ -2,6 +2,7 @@ package py.com.qa.view;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -79,6 +80,9 @@ public class PrincipalView extends JFrame
 		/*************************************/
 		panelPrincipal = new JPanel();
 		panelPrincipal.setBorder(new CompoundBorder());
+		// FUENTE
+		panelPrincipal.setFont(new Font("Verdana", Font.PLAIN, 12));
+
 		setContentPane(panelPrincipal);
 		panelPrincipal.setLayout(new BorderLayout(0, 0));
 		/*************************************/
@@ -209,6 +213,7 @@ public class PrincipalView extends JFrame
 					System.out.println(Configuracion.QUERY_PLANILLA);
 					ResultSet rs = null;
 					Planilla padre = null;
+
 					while (res.next()) {
 						String codEmpresa = res.getString("cod_empresa");
 						String codSucursal = res.getString("cod_sucursal");
@@ -346,11 +351,9 @@ public class PrincipalView extends JFrame
 		/******************************************************/
 		/************ SOLO PERMITIR UNA VENTANA ***************/
 		/******************************************************/
-		if (Configuracion.OPENFRAMECOUNT == 0) {
-			DataView data = new DataView(e.getPath().getLastPathComponent().toString());
-			data.setVisible(true);
-			desktop.add(data);
-		}
+		DataView data = new DataView(e.getPath().getLastPathComponent().toString());
+		data.setVisible(true);
+		desktop.add(data);
 	}
 
 	@Override
@@ -381,6 +384,7 @@ public class PrincipalView extends JFrame
 		/*************************************/
 		/**** SETEAR FECHA A CAMPO GLOBAL ****/
 		/*************************************/
+		System.out.println("Cambió fecha");
 		Configuracion.FILTER_DATE_CHOOSER = this.dateChooser;
 	}
 

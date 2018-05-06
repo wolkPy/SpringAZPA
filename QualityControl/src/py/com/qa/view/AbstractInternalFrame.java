@@ -1,5 +1,9 @@
 package py.com.qa.view;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.swing.ImageIcon;
 import javax.swing.JInternalFrame;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
@@ -20,13 +24,12 @@ public abstract class AbstractInternalFrame extends JInternalFrame implements In
 		// ...Then set the window size or call pack...
 		addInternalFrameListener(this);
 		setSize(900, 800);
-		// setSize(this.getContentPane().getSize());
 		// Set the window's location.
 		this.toFront();
 		setLocation(Configuracion.XOFFSET * Configuracion.OPENFRAMECOUNT,
 				Configuracion.YOFFSET * Configuracion.OPENFRAMECOUNT);
-		// setDesktopIcon(Toolkit.getDefaultToolkit().getImage(LoginView.class.getResource(Configuracion.QAICON)));
-		this.setFrameIcon(getFrameIcon());
+		this.setFrameIcon(
+				new ImageIcon(this.getClass().getResource("/images/logo" + Configuracion.CODEMPRESA + ".jpg")));
 	}
 
 	@Override
@@ -40,7 +43,9 @@ public abstract class AbstractInternalFrame extends JInternalFrame implements In
 
 	@Override
 	public void internalFrameClosed(InternalFrameEvent e) {
-		--Configuracion.OPENFRAMECOUNT;
+		if (Configuracion.OPENFRAMECOUNT > 0) {
+			--Configuracion.OPENFRAMECOUNT;
+		}
 	}
 
 	@Override
