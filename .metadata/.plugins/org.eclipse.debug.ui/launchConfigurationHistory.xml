@@ -4,11 +4,11 @@
 <mruHistory/>
 <favorites/>
 </launchGroup>
-<launchGroup id="org.eclipse.debug.ui.launchGroup.profile">
+<launchGroup id="org.hibernate.eclipse.launch.ConsoleConfigurationLaunchGroup">
 <mruHistory/>
 <favorites/>
 </launchGroup>
-<launchGroup id="org.hibernate.eclipse.launch.ConsoleConfigurationLaunchGroup">
+<launchGroup id="org.eclipse.debug.ui.launchGroup.profile">
 <mruHistory/>
 <favorites/>
 </launchGroup>
