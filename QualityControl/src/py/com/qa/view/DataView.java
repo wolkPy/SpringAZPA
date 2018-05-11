@@ -22,34 +22,44 @@ import py.com.qa.clases.DetalleLanzamiento;
 import py.com.qa.clases.ExcelWriter;
 import py.com.qa.clases.Lanzamiento;
 import py.com.qa.clases.Planilla;
+import py.com.qa.conectivity.ManejadorConexiones;
 import py.com.qa.configs.Configuracion;
 import py.com.qa.configs.MiRender;
 
+/* CLASE QUE PERMITE DISEÑAR LA PLANILLA DE ACUERDO A LA SELECCION DEL USUARIO, VERIFICA SI EXISTE EL MOVIMIENTO DE PLANILLA EN FECHA, LUEGO CARGA EL FORMATO Y DATOS SI EXISTE, O SOLO FORMATO SI NO.
+ * AL CARGAR LOS DATOS Y FORMATO VUELVE A RECORRER PARA "CONOCER" POSICION DE COLUMNA (PARA EVITAR PREGUNTAR EN CADA RECORRIDA) Y FORMATE DE ACUERDO A LOS TIPOS DE VARIABLES, MEDIA Y DECIMALES.
+ */
 public class DataView extends AbstractInternalFrame implements KeyListener {
-	/* CONSTANTES */
+	/******************************************************/
+	/******************* CONSTANTES ***********************/
+	/******************************************************/
 	private static final String sqlSelectPlanillaDescripcion = "select a.cod_empresa,a.cod_sucursal,a.cod_planilla,a.descripcion,a.cod_planilla_padre,a.orden,a.estado,nvl(b.plc_tam_col,0) plc_tam_col from qa_planilla a, qa_planilla_config b where a.cod_empresa = b.cod_empresa(+) and a.cod_sucursal = b.cod_sucursal(+) and a.cod_planilla = b.cod_planilla(+) and a.cod_empresa = ? and a.cod_sucursal = ? and a.descripcion = ? and a.cod_planilla_padre <> 0 order by to_number(orden)";
 	private static final String sqlSelectMovimiento = "select cod_movimiento from qa_lab_mov where cod_empresa = ? and cod_planilla = ? and fecha = ?";
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	/* VARIABLES */
-	private static String sql;
+	/******************************************************/
+	/******************** VARIABLES ***********************/
+	/******************************************************/
+	private String sql;
 	private static ExcelWriter ew;
-	private Connection con = Configuracion.CON;
-	private String descripcion;
 	private JTable sqlData;
-	private int tamanhoCol;
+	private String descripcion;
 	private Planilla planilla;
-	private String formula;
 	/******************************************************/
 	/************ CONOCER POSICION EN TABLA ***************/
 	/******************************************************/
-	private static int columna1;
-	private static int columnaResultado;
-	private static int columnaVariable;
-	private static int columnaFormula;
-	private static int columnaEsFormula;
+	private static int tamanhoCol;
+	private static int posColResultado;
+	private static int posColVariable;
+	private static int posColFormula;
+	private static int posColEsFormula;
+	private static int posColOrden;
+	private static int posColMedida;
+	private static int posColTipoVar;
+	private static int posColTipoMedia;
+	private static int posColDecimal;
 	/******************************************************/
 	/************ PARSEAR DE DATE A STRING ****************/
 	/******************************************************/
@@ -60,26 +70,32 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 	/******************************************************/
 	/****************** MOVIMIENTO ************************/
 	/******************************************************/
+	static String codEmpresa;
+	static String codSucursal;
 	Lanzamiento lan;
 
+	/******************************************************/
 	public DataView(String nombrePlanilla) {
 		super(nombrePlanilla);
+		System.out.println("Constructor...");
 		this.descripcion = nombrePlanilla;
 		/************ PARSEAR DE DATE A STRING ****************/
 		formato = Configuracion.FILTER_DATE_CHOOSER.getDateFormatString();
 		sdf = new SimpleDateFormat(formato);
 		date = Configuracion.FILTER_DATE_CHOOSER.getDate();
 		fecha = sdf.format(date);
-
+		codEmpresa = Configuracion.CODEMPRESA;
+		codSucursal = Configuracion.CODSUCURSAL;
 		/*******************************************************/
 		/******** RECUPERAMOS EL MODELO DE LA PLANILLA *********/
 		/*******************************************************/
 		initialize();
-		createAndAddComponentToPrincipalPane(this);
+		crearPlanillaYVisualizar(this);
 	}
 
 	@SuppressWarnings("static-access")
 	private void initialize() {
+		System.out.println("initialize...");
 		planilla = null;
 		try {
 			Connection con = Configuracion.CON;
@@ -88,7 +104,6 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 			pstmt.setString(1, Configuracion.CODEMPRESA);
 			pstmt.setString(2, Configuracion.CODSUCURSAL);
 			pstmt.setString(3, this.descripcion);
-
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
 				planilla = new Planilla(rs.getString("cod_empresa"), rs.getString("cod_sucursal"),
@@ -102,8 +117,6 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 			e1.printStackTrace();
 		}
 
-		String codEmpresa = Configuracion.CODEMPRESA;
-		String codSucursal = Configuracion.CODSUCURSAL;
 		/* VERIFICAMOS SI EXISTE PLANILLA CARGADA EN FECHA SELECCIONADA */
 		verificarPlanillaCargada(codEmpresa, planilla.getCodPlanilla(), this.fecha);
 		/******************************************************/
@@ -113,6 +126,7 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		if (this.lan == null) {
 			if (planilla != null) {
 				CallableStatement sentencia;
+				Connection con = Configuracion.CON;
 				/******************************************************/
 				/*** SE RECUPERA QUERY CON FUNCION DE BASE DE DATOS ***/
 				/******************************************************/
@@ -124,14 +138,15 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 					sentencia.setLong(4, planilla.getCodPlanilla());
 					sentencia.executeQuery();
 					this.sql = sentencia.getString(1);
+					sentencia.close();
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
 			}
 		} else {
 			/***************************************************************************/
-			/** EN CASO QUE ENCUENTRE MOVIMIENTO SE DEBE CARGAR DATOS YA ALMACENADOS. **/
-			/****************** SE CAMBIA LA SENTENCIA DE CONSULTA *********************/
+			/* EN CASO QUE ENCUENTRE MOVIMIENTO SE DEBE CARGAR DATOS YA ALMACENADOS. ***/
+			/* SE CAMBIA LA SENTENCIA DE CONSULTA **************************************/
 			/***************************************************************************/
 			if (planilla != null) {
 				crearSentencia(codEmpresa, codSucursal);
@@ -139,9 +154,11 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		}
 	}
 
-	@SuppressWarnings("static-access")
 	private void crearSentencia(String codEmpresa, String codSucursal) {
+		System.out.println("crearSentencia...");
+
 		CallableStatement sentencia;
+		Connection con = Configuracion.CON;
 		/****************************************************/
 		/** SE RECUPERA QUERY CON FUNCION DE BASE DE DATOS **/
 		/****************************************************/
@@ -154,12 +171,94 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 			sentencia.setLong(5, lan.getCodMovimiento());
 			sentencia.executeQuery();
 			this.sql = sentencia.getString(1);
+			sentencia.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 
+	private void crearPlanillaYVisualizar(DataView dataView) {
+		System.out.println("crearPlanillaYVisualizar...");
+		/** Principal Panel **/
+		JPanel principalPane = new JPanel();
+		principalPane.setLayout(new BorderLayout());
+		JScrollPane centerPane = null;
+		sqlData = null;
+		/** DEPENDIENDO SI ENCUENTRA O NO LA PLANILLA REGISTRADA **/
+		/*********** SE CARGA O NO UNA NUEVA PLANILLA *************/
+		ew = new ExcelWriter(this.sql);
+		if (ew.getData().length != 0 && ew.getColumnNames().length != 0) {
+			sqlData = new JTable(ew.getData(), ew.getColumnNames()) {
+				private static final long serialVersionUID = 1L;
+
+				public boolean isCellEditable(int row, int column) {
+					/** SI LA COLUMNA DE ESA FILA ES FORMULA ENTONCES **/
+					/***************** NO ES EDITABLE ******************/
+					if (sqlData.getValueAt(row, posColEsFormula).equals("S")) {
+						return false;
+					}
+					/** SI LA COLUMNA ES MENOR A LA COLUMNA 1 ENTONCES **/
+					/****************** NO ES EDITABLE ******************/
+					if (column <= posColMedida) {
+						return false;
+					}
+					return true;
+				}
+			};
+			// SETEAR CONFIGURACION DE LA TABLA CON MIRENDER()
+			sqlData.setDefaultRenderer(Object.class, new MiRender());
+			sqlData.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+			centerPane = new JScrollPane(sqlData);
+			centerPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, sqlData.getTableHeader());
+			principalPane.add(centerPane);
+		}
+		/************** CONOCER TABLA **************/
+		/** SABER DONDE SE ENCUENTRA CADA COLUMNA **/
+		conocerTabla();
+		/* RECORRER TABLA */
+		verificarPlanillaCargada(codEmpresa, planilla.getCodPlanilla(), fecha);
+		recorrerTabla();
+		centerPane.addKeyListener(this);
+		sqlData.addKeyListener(this);
+		principalPane.addKeyListener(this);
+		getContentPane().addKeyListener(this);
+		this.add(principalPane, BorderLayout.CENTER);
+	}
+
+	/*
+	 * RECORRER LAS COLUMNAS PARA SABER EL VALOR DE CADA UNA Y EVITAR PREGUNTAR
+	 */
+	private void conocerTabla() {
+		System.out.println("conocerTabla...");
+		for (int i = 0; i < sqlData.getColumnCount(); i++) {
+			if (sqlData.getColumnName(i).toString().equals("RESULTADO")) {
+				posColResultado = i;
+			} else if (sqlData.getColumnName(i).toString().equals("COD_VARIABLE")) {
+				posColVariable = i;
+			} else if (sqlData.getColumnName(i).toUpperCase().equals("ES_FORMULA")) {
+				posColEsFormula = i;
+				Configuracion.POSCOLESFORMULA = i;
+			} else if (sqlData.getColumnName(i).toUpperCase().equals("VAR_FORMULA")) {
+				posColFormula = i;
+			} else if (sqlData.getColumnName(i).toUpperCase().equals("ORDEN")) {
+				posColOrden = i;
+			} else if (sqlData.getColumnName(i).toUpperCase().equals("MEDIDA")) {
+				posColMedida = i;
+				Configuracion.POSCOLMEDIDA = i;
+			} else if (sqlData.getColumnName(i).toUpperCase().equals("VAR_TIPO_DIG")) {
+				posColTipoVar = i;
+				Configuracion.POSCOLTIPOVAR = i;
+			} else if (sqlData.getColumnName(i).toUpperCase().equals("VAR_TIPO_MEDIA")) {
+				posColTipoMedia = i;
+			} else if (sqlData.getColumnName(i).toUpperCase().equals("VAR_MAS_DEC")) {
+				posColDecimal = i;
+			}
+		}
+	}
+
+	/* VERIFICA SI MOVIMIENTO DE PLANILLA EXISTE O NO EN FECHA SELECCIONADA */
 	private void verificarPlanillaCargada(String codEmpresa, long codPlanilla, String fecha) {
+		System.out.println("verificarPlanillaCargada...");
 		try {
 			Connection con = Configuracion.CON;
 			PreparedStatement pstmt;
@@ -179,59 +278,34 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		}
 	}
 
-	private void createAndAddComponentToPrincipalPane(DataView dataView) {
-		/** Principal Panel **/
-		JPanel principalPane = new JPanel();
-		principalPane.setLayout(new BorderLayout());
-		JScrollPane centerPane = null;
-		sqlData = null;
-		/** DEPENDIENDO SI ENCUENTRA O NO LA PLANILLA REGISTRADA **/
-		/*********** SE CARGA O NO UNA NUEVA PLANILLA *************/
-		ew = new ExcelWriter(sql);
-		if (ew.getData().length != 0 && ew.getColumnNames().length != 0) {
-			sqlData = new JTable(ew.getData(), ew.getColumnNames()) {
-				private static final long serialVersionUID = 1L;
-
-				public boolean isCellEditable(int row, int column) {
-					/** SI LA COLUMNA DE ESA FILA ES FORMULA ENTONCES **/
-					/***************** NO ES EDITABLE ******************/
-					if (sqlData.getValueAt(row, columnaEsFormula).equals("S")) {
-						return false;
-					}
-					/** SI LA COLUMNA ES MENOR A LA COLUMNA 1 ENTONCES **/
-					/****************** NO ES EDITABLE ******************/
-					if (column < columna1) {
-						return false;
-					}
-					return true;
-				}
-			};
-			sqlData.setDefaultRenderer(Object.class, new MiRender());
-			sqlData.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-			centerPane = new JScrollPane(sqlData);
-			centerPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, sqlData.getTableHeader());
-			principalPane.add(centerPane);
-		}
-		/************** CONOCER TABLA **************/
-		/** SABER DONDE SE ENCUENTRA CADA COLUMNA **/
-		conocerTabla();
-		/* RECORRER TABLA */
-		recorrerTabla();
-
-		centerPane.addKeyListener(this);
-		sqlData.addKeyListener(this);
-		principalPane.addKeyListener(this);
-		getContentPane().addKeyListener(this);
-		this.add(principalPane, BorderLayout.CENTER);
-	}
-
 	private void recorrerTabla() {
+		System.out.println("recorrerTabla");
+
 		boolean isVisible = false;
-		boolean isFormula = false;
 		boolean isOK = false;
-		Object aValue = null;
+		String formula = null;
+		String formulaAux = null;
+		String parametros;
+		String aValue;
+		Double total = 0.0;
+		Double prom = 0.0;
+		boolean isFormula = false;
+		int cantReg = 0;
+		int cantDecimales = 0;
 		for (int k = 0; k < sqlData.getRowCount(); k++) {
+			total = 0.0;
+			cantReg = 0;
+			prom = 0.0;
+			cantDecimales = (sqlData.getValueAt(k, posColDecimal) == null) ? 0
+					: Integer.parseInt((sqlData.getValueAt(k, posColDecimal).toString()));
+			if (sqlData.getValueAt(k, posColEsFormula).toString().equals("S")) {
+				formula = sqlData.getValueAt(k, posColFormula).toString();
+				isFormula = true;
+			} else {
+				isFormula = false;
+			}
 			for (int i = 0; i < sqlData.getColumnCount(); i++) {
+
 				/***********************************************/
 				/* SETEAR DE ACUERDO AL NOMBRE DE LAS COLUMNAS */
 				/**** OCULTAR CAMPOS QUE NO SE DEBEN MOSTRAR ***/
@@ -239,37 +313,34 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 				/***********************************************/
 				/* MIENTRAS NO LLEGUE A VAR_ORDEN SE OCULTARAN */
 				/************ TODAS LAS COLUMNAS ***************/
-
-				if (sqlData.getColumnName(i).toUpperCase().equals("ORDEN")) {
+				if (i >= posColOrden) {
 					isVisible = true;
-				}
-				// if (sqlData.getColumnName(i).toUpperCase().equals("1")) {
-				// isOK = true;
-				// }
-				// if (sqlData.getColumnName(i).toUpperCase().equals("RESULTADO")) {
-				// isOK = false;
-				// }
-				if (i == columna1) {
-					isOK = true;
-				} else if (i == columnaResultado) {
-					isOK = false;
-				}
-				// if (sqlData.getColumnName(i).toUpperCase().equals("ES_FORMULA")) {
-				// if (sqlData.getValueAt(k, i).equals('S')) {
-				// isFormula = true;
-				// } else {
-				// isFormula = false;
-				// }
-				// }
-				if (sqlData.getValueAt(k, columnaEsFormula).equals("S")) {
-					isFormula = true;
 				} else {
-					isFormula = false;
+					isVisible = false;
 				}
-
-				if (isFormula) {
-					this.formula = sqlData.getValueAt(k, i).toString();
-					this.formula.replaceAll("getAnalise(", "getAnalise(" + "");
+				// posColTipoMedia == 2
+				if (i == (posColMedida + 1)) {
+					isOK = true;
+				} else if (i == posColResultado) {
+					isOK = false;
+					System.out.println(sqlData.getValueAt(k, posColVariable).toString() + " = " + total);
+					if (sqlData.getValueAt(k, posColTipoVar).toString().equals("0")) {
+						if (sqlData.getValueAt(k, posColTipoMedia).toString().equals("0")) {
+							sqlData.setValueAt("", k, i);
+						} else if (sqlData.getValueAt(k, posColTipoMedia).toString().equals("1")) {
+							prom = total / cantReg;
+							sqlData.setValueAt(redondear(prom, cantDecimales), k, i);
+						} else if (sqlData.getValueAt(k, posColTipoMedia).toString().equals("2")) {
+							prom = total / cantReg;
+							sqlData.setValueAt(redondear(prom, cantDecimales), k, i);
+						} else if (sqlData.getValueAt(k, posColTipoMedia).toString().equals("3")) {
+							sqlData.setValueAt(redondear(total, cantDecimales), k, i);
+						} else if (sqlData.getValueAt(k, posColTipoMedia).toString().equals("5")) {
+							sqlData.setValueAt(redondear(total, cantDecimales), k, i);
+						}
+					} else {
+						sqlData.setValueAt("", k, i);
+					}
 				}
 				if (!isVisible) {
 					sqlData.getColumn(sqlData.getColumnName(i)).setWidth(0);
@@ -278,81 +349,53 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 				}
 
 				if (isOK) {
-					CallableStatement sentencia;
-					/****************************************************/
-					/** SE RECUPERA QUERY CON FUNCION DE BASE DE DATOS **/
-					/****************************************************/
-					try {
-						/*
-						 * LLAMAR A UNA FUNCION QUE HAGA EL EXECUTE IMMEDIATE DEL STRING " DENTRO DEL
-						 * STRING DEBE HABER 1 A MAS FORMULAS LAS CUALES DEBEN EXISTIR EN
-						 */
-						sentencia = con.prepareCall("{?=call fnc_devu_qa_lab_value(?,?,?,?)}");
-						sentencia.registerOutParameter(1, Types.VARCHAR);
-						sentencia.setString(2, Configuracion.CODEMPRESA);
-						sentencia.setString(3, Configuracion.CODSUCURSAL);
-						sentencia.setLong(4, planilla.getCodPlanilla());
-						sentencia.setLong(5, lan.getCodMovimiento());
-						sentencia.executeQuery();
-						ew = new ExcelWriter(sentencia.getString(1));
-						ew.writeExcel();
-					} catch (SQLException e1) {
-						e1.printStackTrace();
+					/* SI LA FILA ES DE TIPO NUMERICO ENTONCES HACE LA ACUMULACION */
+					/* Y EL TIPO DE MEDIA ES IGUAL A 2 */
+					if (sqlData.getValueAt(k, posColTipoVar).toString().equals("0")) {
+						// SI NO EXISTE REGISTRO ENTONCES NO ACUMULA NI CUENTA.
+						if (sqlData.getValueAt(k, i) != null) {
+							aValue = sqlData.getValueAt(k, i).toString();
+
+							total = total + Double.parseDouble(aValue);
+							cantReg++;
+						} else {
+							aValue = "0";
+						}
 					}
-					sqlData.setValueAt(aValue, k, i);
+					// **************//
+					if (isFormula) {
+						parametros = "'" + codEmpresa + "','" + fecha + "','" + sqlData.getColumnName(i) + "',";
+						if (formula != null) {
+							formulaAux = formula.replace("GetAnalise(", "GetAnalise(" + parametros);
+							CallableStatement sentencia;
+							Connection con = Configuracion.CON;
+							/****************************************************/
+							/** SE RECUPERA QUERY CON FUNCION DE BASE DE DATOS **/
+							/****************************************************/
+							System.out.println(formulaAux);
+							try {
+								sentencia = con.prepareCall("{?=call prc_qa_execute_formula(?)}");
+								sentencia.registerOutParameter(1, Types.VARCHAR);
+								sentencia.setString(2, formulaAux);
+								sentencia.executeQuery();
+								aValue = sentencia.getString(1);
+
+								sqlData.setValueAt(aValue, k, i);
+								sentencia.close();
+							} catch (SQLException e1) {
+								sqlData.setValueAt("######", k, i);
+							}
+						}
+					}
 				}
-
 			}
 		}
+
 	}
 
-	@Override
-	public void keyTyped(KeyEvent e) {
-		System.out.println("keyTyped" + e.getKeyCode());
-	}
-
-	@SuppressWarnings("static-access")
-	@Override
-	public void keyPressed(KeyEvent e) {
-		System.out.println("keyPressed" + e.getKeyCode());
-		if (e.getKeyCode() == KeyEvent.VK_F5) {
-			/*******************************************************/
-			/*************** REFREZCAR MATRIZ **********************/
-			/*******************************************************/
-			// refrezcarDetalleMovimiento();
-		}
-		if (e.getKeyCode() == KeyEvent.VK_F10) {
-			/* VERIFICAR/GUARDAR/ACTUALIZAR MOVIMIENTO */
-			guardar();
-		}
-		if (e.getKeyCode() == KeyEvent.VK_F11) {
-			/* VERIFICAR/GUARDAR/ACTUALIZAR MOVIMIENTO */
-			CallableStatement sentencia;
-			/****************************************************/
-			/** SE RECUPERA QUERY CON FUNCION DE BASE DE DATOS **/
-			/****************************************************/
-			try {
-				sentencia = con.prepareCall("{?=call fnc_devu_qa_lab_excel(?,?,?,?)}");
-				sentencia.registerOutParameter(1, Types.VARCHAR);
-				sentencia.setString(2, Configuracion.CODEMPRESA);
-				sentencia.setString(3, Configuracion.CODSUCURSAL);
-				sentencia.setLong(4, planilla.getCodPlanilla());
-				sentencia.setLong(5, lan.getCodMovimiento());
-				sentencia.executeQuery();
-				ew = new ExcelWriter(sentencia.getString(1));
-				ew.writeExcel();
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-			}
-
-		}
-		if (e.getKeyCode() == KeyEvent.VK_F12) {
-			/* GUARDAR Y/O SALIR DE PLANILLA */
-			salir();
-		}
-	}
-
+	/* INSERTAR O ACTUALIZAR PLANILLA */
 	private void guardar() {
+		System.out.println("guardar...");
 		/*******************************************************/
 		/************** VERIFICAR LANZAMIENTO ******************/
 		/*******************************************************/
@@ -375,7 +418,6 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 			/**********************************************************/
 			insertarDetalleMovimiento();
 		} else {
-			System.out.println("SE DEBE ACTUALIZAR-.....");
 			/*******************************************************/
 			/** EN CASO DE QUE EXISTA ENTONCES SE DEBE ACTUALIZAR **/
 			/*******************************************************/
@@ -383,45 +425,27 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		}
 	}
 
-	/* RECORRER LAS COLUMNAS PARA SABER EL VALOR DE CADA UNA Y EVITAR PREGUNTAR */
-	private void conocerTabla() {
-		for (int i = 0; i < sqlData.getColumnCount(); i++) {
-			if (sqlData.getColumnName(i).toString().equals("1")) {
-				columna1 = i;
-			} else if (sqlData.getColumnName(i).toString().equals("RESULTADO")) {
-				columnaResultado = i;
-			} else if (sqlData.getColumnName(i).toString().equals("COD_VARIABLE")) {
-				columnaVariable = i;
-			} else if (sqlData.getColumnName(i).toUpperCase().equals("ES_FORMULA")) {
-				columnaEsFormula = i;
-			} else if (sqlData.getColumnName(i).toUpperCase().equals("FORMULA")) {
-				columnaFormula = i;
-			}
-		}
-	}
-
 	private void insertarDetalleMovimiento() {
+		System.out.println("insertarDetalleMovimiento...");
 		DetalleLanzamiento dLan = null;
 		for (int k = 0; k < sqlData.getRowCount(); k++) {
 			boolean isOk = false;
 			long codVariable;
 			String value = null;
-			int movCol;
-			int indiceCodVariable = 0;
+			String movCol;
 
-			for (int i = 0; i < sqlData.getColumnCount(); i++) {
-				System.out.println(sqlData.getColumnName(i).toString());
+			/* PARA REDUCIR MEJORAR LA PERFORMANCE SE RECORRE DESDE COLUMNA MEDIDA + 1 */
+			for (int i = (posColMedida + 1); i < sqlData.getColumnCount(); i++) {
 				/******************************************************************/
-				/** AL ENCONTRAR LA COLUMNA 1 EMPIEZA A INSERTAR LOS MOVIMIENTOS **/
+				/**
+				 * AL ENCONTRAR LA COLUMNA 1 EMPIEZA A INSERTAR LOS MOVIMIENTOS
+				 **/
 				/******************************************************************/
-				if (sqlData.getColumnName(i).toString().equals("1")) {
+				if (i == (posColMedida + 1)) {
 					isOk = true;
 				}
-				if (sqlData.getColumnName(i).toString().equals("RESULTADO")) {
+				if (i == posColResultado) {
 					isOk = false;
-				}
-				if (sqlData.getColumnName(i).toString().equals("COD_VARIABLE")) {
-					indiceCodVariable = i;
 				}
 				if (isOk) {
 					if (sqlData.getValueAt(k, i) == null) {
@@ -429,8 +453,11 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 					} else {
 						value = sqlData.getValueAt(k, i).toString();
 					}
-					codVariable = Long.parseLong(sqlData.getValueAt(k, indiceCodVariable).toString());
-					movCol = Integer.parseInt(sqlData.getColumnName(i).toString());
+					if (value.equals("######")) {
+						value = "";
+					}
+					codVariable = Long.parseLong(sqlData.getValueAt(k, posColVariable).toString());
+					movCol = sqlData.getColumnName(i).toString();
 					dLan = new DetalleLanzamiento(lan.getCodEmpresa(), lan.getCodMovimiento(), codVariable, movCol,
 							value.replace(".", ","));
 					dLan.insertar();
@@ -440,40 +467,39 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 	}
 
 	private void actualizarDetalleMovimiento() {
+		System.out.println("actualizarDetalleMovimiento...");
 		DetalleLanzamiento dLan = null;
 		Object celValue = null;
 		for (int k = 0; k < sqlData.getRowCount(); k++) {
 			boolean isOk = false;
 			long codVariable;
 			String value = null;
-			int movCol;
-			int indiceCodVariable = 0;
-
-			for (int i = 0; i < sqlData.getColumnCount(); i++) {
+			String movCol;
+			/* PARA REDUCIR MEJORAR LA PERFORMANCE SE RECORRE DESDE COLUMNA MEDIDA + 1 */
+			for (int i = (posColMedida + 1); i < sqlData.getColumnCount(); i++) {
 				/******************************************************************/
-				/** AL ENCONTRAR LA COLUMNA 1 EMPIEZA A INSERTAR LOS MOVIMIENTOS **/
+				/**
+				 * AL ENCONTRAR LA COLUMNA 1 EMPIEZA A INSERTAR LOS MOVIMIENTOS
+				 **/
 				/******************************************************************/
-				if (sqlData.getColumnName(i).toString().equals("1")) {
+				if (i == (posColMedida + 1)) {
 					isOk = true;
 				}
-				if (sqlData.getColumnName(i).toString().equals("RESULTADO")) {
+				if (i == posColResultado) {
 					isOk = false;
 				}
-
-				if (sqlData.getColumnName(i).toString().equals("COD_VARIABLE")) {
-					indiceCodVariable = i;
-				}
-
 				if (isOk) {
 					celValue = sqlData.getValueAt(k, i);
-					System.out.println(celValue);
 					if (celValue != null) {
 						value = sqlData.getValueAt(k, i).toString();
 					} else {
 						value = "";
 					}
-					codVariable = Long.parseLong(sqlData.getValueAt(k, indiceCodVariable).toString());
-					movCol = Integer.parseInt(sqlData.getColumnName(i).toString());
+					if (value.equals("######")) {
+						value = "";
+					}
+					codVariable = Long.parseLong(sqlData.getValueAt(k, posColVariable).toString());
+					movCol = sqlData.getColumnName(i).toString();
 					dLan = new DetalleLanzamiento(lan.getCodEmpresa(), lan.getCodMovimiento(), codVariable, movCol,
 							value.replace(".", ","));
 					dLan.actualizar();
@@ -482,25 +508,41 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		}
 	}
 
-	@Override
-	public void keyReleased(KeyEvent e) {
-		System.out.println("keyPressed" + e.getKeyCode());
+	private void exportarAExcel() {
+		System.out.println("exportarAExcel...");
+		CallableStatement sentencia;
+		Connection con = Configuracion.CON;
+		/****************************************************/
+		/** SE RECUPERA QUERY CON FUNCION DE BASE DE DATOS **/
+		/****************************************************/
+		try {
+			sentencia = con.prepareCall("{?=call fnc_devu_qa_lab_excel(?,?,?,?)}");
+			sentencia.registerOutParameter(1, Types.VARCHAR);
+			sentencia.setString(2, Configuracion.CODEMPRESA);
+			sentencia.setString(3, Configuracion.CODSUCURSAL);
+			sentencia.setLong(4, planilla.getCodPlanilla());
+			sentencia.setLong(5, lan.getCodMovimiento());
+			sentencia.executeQuery();
+			ew = new ExcelWriter(sentencia.getString(1));
+			ew.writeExcel();
+			sentencia.close();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
 	}
 
-	public int getTamanhoCol() {
-		return tamanhoCol;
-	}
-
-	public void setTamanhoCol(int tamanhoCol) {
-		this.tamanhoCol = tamanhoCol;
-	}
-
-	@Override
-	public void internalFrameClosing(InternalFrameEvent e) {
-		salir();
+	public static double redondear(double valorInicial, int numeroDecimales) {
+		if (numeroDecimales < 0)
+			throw new IllegalArgumentException();
+		long factor, tmp;
+		factor = (long) Math.pow(10, numeroDecimales);
+		valorInicial = valorInicial * factor;
+		tmp = Math.round(valorInicial);
+		return (double) tmp / factor;
 	}
 
 	private void salir() {
+		System.out.println("salir...");
 		/* ANTES DE CERRAR SE DEBE PREGUNTAR */
 		/* SI SE DESEA GUARDAR LOS REGISTROS. */
 		if (JOptionPane.showConfirmDialog(null, "Guardar y salir de la planilla?", "Confirmar salida",
@@ -510,24 +552,39 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		this.dispose();
 	}
 
-	public int getColumna1() {
-		return columna1;
+	/* EVENTOS */
+	@Override
+	public void internalFrameClosing(InternalFrameEvent e) {
+		salir();
 	}
 
-	public int getColumnaResultado() {
-		return columnaResultado;
+	@Override
+	public void keyTyped(KeyEvent e) {
 	}
 
-	public int getColumnaVariable() {
-		return columnaVariable;
+	@Override
+	public void keyReleased(KeyEvent e) {
 	}
 
-	public int getColumnaFormula() {
-		return columnaFormula;
+	@Override
+	public void keyPressed(KeyEvent e) {
+		if (e.getKeyCode() == KeyEvent.VK_F5) {
+			/*******************************************************/
+			/*************** REFREZCAR MATRIZ **********************/
+			/*******************************************************/
+			// refrezcarDetalleMovimiento();
+		}
+		if (e.getKeyCode() == KeyEvent.VK_F10) {
+			/* VERIFICAR/GUARDAR/ACTUALIZAR MOVIMIENTO */
+			guardar();
+		}
+		if (e.getKeyCode() == KeyEvent.VK_F11) {
+			/* VERIFICAR/GUARDAR/ACTUALIZAR MOVIMIENTO */
+			exportarAExcel();
+		}
+		if (e.getKeyCode() == KeyEvent.VK_F12) {
+			/* GUARDAR Y/O SALIR DE PLANILLA */
+			salir();
+		}
 	}
-
-	public int getColumnaIsFormula() {
-		return columnaEsFormula;
-	}
-
 }

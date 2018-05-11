@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
@@ -98,8 +99,10 @@ public class LoginView implements ActionListener {
 					String pass = new String(arrayC);
 					Configuracion.CON = ManejadorConexiones.obtenerConexionORA(userTxt.getText(), pass);
 					Configuracion.USUARIO = userTxt.getText().toUpperCase();
+					Configuracion.PASS = pass;
 				} catch (SQLException e1) {
-					e1.printStackTrace();
+					JOptionPane.showMessageDialog(panel, "Nombre de usuario/contaseña no válidos", "Conexión Denegada",
+							JOptionPane.ERROR_MESSAGE);
 				}
 				if (Configuracion.CON != null) {
 					loginFrm.setVisible(false);

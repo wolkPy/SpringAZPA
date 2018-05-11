@@ -13,7 +13,7 @@ public class QASystem {
 			}
 			if (args[1] != null) {
 				Configuracion.CODSUCURSAL = args[1];
-			}
+			}	
 		}
 		EventQueue.invokeLater(new Runnable() {
 			@SuppressWarnings("unused")

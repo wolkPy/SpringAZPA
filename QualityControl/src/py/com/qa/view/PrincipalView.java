@@ -210,7 +210,6 @@ public class PrincipalView extends JFrame
 					PreparedStatement pstmt = con.prepareStatement(Configuracion.QUERY_PLANILLA);
 					pstmt.setString(1, Configuracion.CODEMPRESA);
 					ResultSet res = pstmt.executeQuery();
-					System.out.println(Configuracion.QUERY_PLANILLA);
 					ResultSet rs = null;
 					Planilla padre = null;
 
@@ -358,17 +357,14 @@ public class PrincipalView extends JFrame
 
 	@Override
 	public void keyTyped(KeyEvent e) {
-		System.out.println(e.getKeyCode());
 	}
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		System.out.println(e.getKeyCode());
 	}
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-		System.out.println(e.getKeyCode());
 	}
 
 	public JDateChooser getDateChooser() {
@@ -384,7 +380,6 @@ public class PrincipalView extends JFrame
 		/*************************************/
 		/**** SETEAR FECHA A CAMPO GLOBAL ****/
 		/*************************************/
-		System.out.println("Cambió fecha");
 		Configuracion.FILTER_DATE_CHOOSER = this.dateChooser;
 	}
 

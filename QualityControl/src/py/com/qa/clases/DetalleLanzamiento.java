@@ -19,10 +19,10 @@ public class DetalleLanzamiento {
 	private String codEmpresa;
 	private long codMovimiento;
 	private long codVariable;
-	private int movColumna;
+	private String movColumna;
 	private String movValor;
 
-	public DetalleLanzamiento(String codEmpresa, long codMovimiento, long codVariable, int movColumna,
+	public DetalleLanzamiento(String codEmpresa, long codMovimiento, long codVariable, String movColumna,
 			String movValor) {
 		super();
 		this.codEmpresa = codEmpresa;
@@ -41,7 +41,7 @@ public class DetalleLanzamiento {
 			pstmt.setString(1, this.codEmpresa);
 			pstmt.setLong(2, this.codMovimiento);
 			pstmt.setLong(3, this.codVariable);
-			pstmt.setInt(4, this.movColumna);
+			pstmt.setString(4, this.movColumna);
 			pstmt.setString(5, this.movValor);
 
 			pstmt.executeUpdate();
@@ -61,7 +61,7 @@ public class DetalleLanzamiento {
 			pstmt.setString(2, this.codEmpresa);
 			pstmt.setLong(3, this.codMovimiento);
 			pstmt.setLong(4, this.codVariable);
-			pstmt.setInt(5, this.movColumna);
+			pstmt.setString(5, this.movColumna);
 
 			pstmt.executeUpdate();
 			pstmt.close();
@@ -94,11 +94,11 @@ public class DetalleLanzamiento {
 		this.codVariable = codVariable;
 	}
 
-	public int getMovColumna() {
+	public String getMovColumna() {
 		return movColumna;
 	}
 
-	public void setMovColumna(int movColumna) {
+	public void setMovColumna(String movColumna) {
 		this.movColumna = movColumna;
 	}
 
