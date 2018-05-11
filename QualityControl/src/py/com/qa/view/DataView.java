@@ -39,9 +39,13 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+<<<<<<< HEAD
 	/******************************************************/
 	/******************** VARIABLES ***********************/
 	/******************************************************/
+=======
+	/* VARIABLES */
+>>>>>>> ba6163b88a156e3fe0d46a88117e8ade4e90c7d9
 	private String sql;
 	private static ExcelWriter ew;
 	private JTable sqlData;
@@ -73,6 +77,7 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 	static String codEmpresa;
 	static String codSucursal;
 	Lanzamiento lan;
+	private int columnaOrden;
 
 	/******************************************************/
 	public DataView(String nombrePlanilla) {
@@ -123,6 +128,7 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		/***** EN CASO QUE CODIGO DE MOVIMIENTO NO SE HAYA ****/
 		/************ ENCONTRADO SIGUE PROCESO NORMAL *********/
 		/******************************************************/
+		System.out.println(planilla.getCodPlanilla());
 		if (this.lan == null) {
 			if (planilla != null) {
 				CallableStatement sentencia;
@@ -138,15 +144,29 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 					sentencia.setLong(4, planilla.getCodPlanilla());
 					sentencia.executeQuery();
 					this.sql = sentencia.getString(1);
+<<<<<<< HEAD
 					sentencia.close();
+=======
+					System.out.println(this.sql);
+>>>>>>> ba6163b88a156e3fe0d46a88117e8ade4e90c7d9
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
 			}
 		} else {
 			/***************************************************************************/
+<<<<<<< HEAD
 			/* EN CASO QUE ENCUENTRE MOVIMIENTO SE DEBE CARGAR DATOS YA ALMACENADOS. ***/
 			/* SE CAMBIA LA SENTENCIA DE CONSULTA **************************************/
+=======
+			/**
+			 * EN CASO QUE ENCUENTRE MOVIMIENTO SE DEBE CARGAR DATOS YA
+			 * ALMACENADOS.
+			 **/
+			/******************
+			 * SE CAMBIA LA SENTENCIA DE CONSULTA
+			 *********************/
+>>>>>>> ba6163b88a156e3fe0d46a88117e8ade4e90c7d9
 			/***************************************************************************/
 			if (planilla != null) {
 				crearSentencia(codEmpresa, codSucursal);
@@ -216,7 +236,13 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		/** SABER DONDE SE ENCUENTRA CADA COLUMNA **/
 		conocerTabla();
 		/* RECORRER TABLA */
+<<<<<<< HEAD
 		verificarPlanillaCargada(codEmpresa, planilla.getCodPlanilla(), fecha);
+=======
+		System.out.println(planilla.getCodPlanilla());
+		verificarPlanillaCargada(codEmpresa, planilla.getCodPlanilla(), fecha);
+		System.out.println(planilla.getCodPlanilla());
+>>>>>>> ba6163b88a156e3fe0d46a88117e8ade4e90c7d9
 		recorrerTabla();
 		centerPane.addKeyListener(this);
 		sqlData.addKeyListener(this);
@@ -313,16 +339,26 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 				/***********************************************/
 				/* MIENTRAS NO LLEGUE A VAR_ORDEN SE OCULTARAN */
 				/************ TODAS LAS COLUMNAS ***************/
+<<<<<<< HEAD
 				if (i >= posColOrden) {
+=======
+
+				if (i >= columnaOrden) {
+>>>>>>> ba6163b88a156e3fe0d46a88117e8ade4e90c7d9
 					isVisible = true;
 				} else {
 					isVisible = false;
 				}
+<<<<<<< HEAD
 				// posColTipoMedia == 2
 				if (i == (posColMedida + 1)) {
+=======
+				if (i == columna1) {
+>>>>>>> ba6163b88a156e3fe0d46a88117e8ade4e90c7d9
 					isOK = true;
 				} else if (i == posColResultado) {
 					isOK = false;
+<<<<<<< HEAD
 					System.out.println(sqlData.getValueAt(k, posColVariable).toString() + " = " + total);
 					if (sqlData.getValueAt(k, posColTipoVar).toString().equals("0")) {
 						if (sqlData.getValueAt(k, posColTipoMedia).toString().equals("0")) {
@@ -341,6 +377,8 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 					} else {
 						sqlData.setValueAt("", k, i);
 					}
+=======
+>>>>>>> ba6163b88a156e3fe0d46a88117e8ade4e90c7d9
 				}
 				if (!isVisible) {
 					sqlData.getColumn(sqlData.getColumnName(i)).setWidth(0);
@@ -348,6 +386,7 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 					sqlData.getColumn(sqlData.getColumnName(i)).setMaxWidth(0);
 				}
 
+<<<<<<< HEAD
 				if (isOK) {
 					/* SI LA FILA ES DE TIPO NUMERICO ENTONCES HACE LA ACUMULACION */
 					/* Y EL TIPO DE MEDIA ES IGUAL A 2 */
@@ -388,6 +427,35 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 						}
 					}
 				}
+=======
+				// if (isOK) {
+				// CallableStatement sentencia;
+				// /****************************************************/
+				// /** SE RECUPERA QUERY CON FUNCION DE BASE DE DATOS **/
+				// /****************************************************/
+				// try {
+				// /*
+				// * LLAMAR A UNA FUNCION QUE HAGA EL EXECUTE IMMEDIATE
+				// * DEL STRING " DENTRO DEL STRING DEBE HABER 1 A MAS
+				// * FORMULAS LAS CUALES DEBEN EXISTIR EN
+				// */
+				// sentencia = con.prepareCall("{?=call
+				// fnc_devu_qa_lab_excel(?,?,?,?)}");
+				// sentencia.registerOutParameter(1, Types.VARCHAR);
+				// sentencia.setString(2, Configuracion.CODEMPRESA);
+				// sentencia.setString(3, Configuracion.CODSUCURSAL);
+				// sentencia.setLong(4, planilla.getCodPlanilla());
+				// sentencia.setLong(5, lan.getCodMovimiento());
+				// sentencia.executeQuery();
+				// ew = new ExcelWriter(sentencia.getString(1));
+				// ew.writeExcel();
+				// } catch (SQLException e1) {
+				// e1.printStackTrace();
+				// }
+				// sqlData.setValueAt(aValue, k, i);
+				// }
+
+>>>>>>> ba6163b88a156e3fe0d46a88117e8ade4e90c7d9
 			}
 		}
 
@@ -425,6 +493,30 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	/*
+	 * RECORRER LAS COLUMNAS PARA SABER EL VALOR DE CADA UNA Y EVITAR PREGUNTAR
+	 */
+	private void conocerTabla() {
+		for (int i = 0; i < sqlData.getColumnCount(); i++) {
+			if (sqlData.getColumnName(i).toString().equals("1")) {
+				columna1 = i;
+			} else if (sqlData.getColumnName(i).toString().equals("RESULTADO")) {
+				columnaResultado = i;
+			} else if (sqlData.getColumnName(i).toString().equals("COD_VARIABLE")) {
+				columnaVariable = i;
+			} else if (sqlData.getColumnName(i).toUpperCase().equals("ES_FORMULA")) {
+				columnaEsFormula = i;
+			} else if (sqlData.getColumnName(i).toUpperCase().equals("FORMULA")) {
+				columnaFormula = i;
+			} else if (sqlData.getColumnName(i).toUpperCase().equals("ORDEN")) {
+				columnaOrden = i;
+			}
+		}
+	}
+
+>>>>>>> ba6163b88a156e3fe0d46a88117e8ade4e90c7d9
 	private void insertarDetalleMovimiento() {
 		System.out.println("insertarDetalleMovimiento...");
 		DetalleLanzamiento dLan = null;
