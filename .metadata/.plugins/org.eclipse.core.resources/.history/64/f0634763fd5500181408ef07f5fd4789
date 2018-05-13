@@ -1,0 +1,9 @@
+package py.com.qa.configs;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+public abstract class ComponentesView {
+	public static JPanel messagePanel;
+	public static JLabel messageLbl;
+}

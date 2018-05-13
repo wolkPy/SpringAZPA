@@ -20,7 +20,6 @@ import java.util.Locale;
 
 import javax.swing.ImageIcon;
 
-import javax.swing.JButton;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -29,6 +28,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import py.com.qa.clases.Planilla;
+import py.com.qa.configs.ComponentesView;
 import py.com.qa.configs.Configuracion;
 import py.com.qa.exceptions.AZPAException;
 import py.com.qa.exceptions.Code;
@@ -36,6 +36,7 @@ import py.com.qa.exceptions.Code;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextField;
 import javax.swing.JTree;
 
 import java.awt.BorderLayout;
@@ -129,6 +130,7 @@ public class PrincipalView extends JFrame
 		/************ FILTRO *****************/
 		/*************************************/
 		JPanel workFilterPanel = new JPanel();
+
 		dibujarFilterPanel(workFilterPanel);
 		workSpacePanel.add(workFilterPanel, BorderLayout.NORTH);
 		/****************************************/
@@ -143,6 +145,19 @@ public class PrincipalView extends JFrame
 		workPanel.add(desktop);
 		desktop.setDragMode(JDesktopPane.OUTLINE_DRAG_MODE);
 		workSpacePanel.add(workPanel, BorderLayout.CENTER);
+		//
+		ComponentesView.messagePanel = new JPanel();
+		workSpacePanel.add(ComponentesView.messagePanel, BorderLayout.SOUTH);
+		{
+			ComponentesView.messageLbl = new JLabel("");
+			ComponentesView.messagePanel.add(ComponentesView.messageLbl, BorderLayout.WEST);
+		}
+		{
+			ComponentesView.messageTxt = new JTextField(50);
+			ComponentesView.messageTxt.setEnabled(false);
+			ComponentesView.messagePanel.add(ComponentesView.messageTxt, BorderLayout.WEST);
+		}
+
 		return workSpacePanel;
 	}
 
@@ -166,11 +181,12 @@ public class PrincipalView extends JFrame
 			dateChooser.getDateEditor().addPropertyChangeListener(this);
 			workFilterPanel.add(dateChooser);
 		}
-		{
-			JButton buscarBtt = new JButton("");
-			buscarBtt.setIcon(new ImageIcon(PrincipalView.class.getResource("/Buscar.gif")));
-			workFilterPanel.add(buscarBtt);
-		}
+		// {
+		// JButton buscarBtt = new JButton("");
+		// buscarBtt.setIcon(new
+		// ImageIcon(PrincipalView.class.getResource("/Buscar.gif")));
+		// workFilterPanel.add(buscarBtt);
+		// }
 	}
 
 	private JPanel dibujarLeftSplitPanel() {
@@ -182,6 +198,7 @@ public class PrincipalView extends JFrame
 	}
 
 	private void dibujarStatusPanel() {
+
 		JPanel statusPanel = new JPanel();
 		panelPrincipal.add(statusPanel, BorderLayout.SOUTH);
 		/*************************************/
@@ -189,13 +206,13 @@ public class PrincipalView extends JFrame
 		/*************************************/
 		{
 			JLabel usuarioLbl = new JLabel("Usuario: " + Configuracion.USUARIO);
-			usuarioLbl.setIcon(new ImageIcon(PrincipalView.class.getResource("/CONTRASE+\u00E6A.gif")));
-			statusPanel.add(usuarioLbl);
+			usuarioLbl.setIcon(new ImageIcon(PrincipalView.class.getResource("/tux.gif")));
+			statusPanel.add(usuarioLbl, BorderLayout.WEST);
 		}
 		{
 			JLabel instanciaLbl = new JLabel("Instancia:" + "BDVCA");
 			instanciaLbl.setIcon(new ImageIcon(PrincipalView.class.getResource("/connect_creating.gif")));
-			statusPanel.add(instanciaLbl);
+			statusPanel.add(instanciaLbl, BorderLayout.WEST);
 		}
 	}
 
