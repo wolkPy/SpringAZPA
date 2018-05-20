@@ -4,9 +4,11 @@ import java.awt.Color;
 import java.awt.Component;
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 import javax.swing.JFormattedTextField;
 import javax.swing.JTable;
@@ -32,6 +34,7 @@ public class MiRender extends javax.swing.table.DefaultTableCellRenderer impleme
 		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		// SI ES FORMULA PINTAR CAMPO
 		JFormattedTextField campoTexto = new JFormattedTextField();
+		// DecimalFormatSymbols simbolo = null;
 
 		if (table.getValueAt(row, Configuracion.POSCOLESFORMULA).toString().equals("S")) {
 			this.setOpaque(true);
@@ -43,13 +46,26 @@ public class MiRender extends javax.swing.table.DefaultTableCellRenderer impleme
 			this.setForeground(Color.BLACK);
 		}
 		// SETEAR FORMATO DE CAMPO
-		if (column > Configuracion.POSCOLMEDIDA) {
+		if (column <= Configuracion.POSCOLMEDIDA) {
+			this.setHorizontalAlignment(SwingConstants.LEFT);
+		} else {
 			if (table.getValueAt(row, Configuracion.POSCOLTIPOVAR).toString().equals("0")) {
 				this.setHorizontalAlignment(SwingConstants.RIGHT);
-				if (value instanceof BigDecimal || value == null) {
-					campoTexto.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(
-							new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("0.00"))));
-					campoTexto.setValue(value);
+				if (value instanceof BigDecimal && value != null) {
+					String pattern = "#,###,##0";
+					NumberFormat nf = NumberFormat.getNumberInstance(Locale.getDefault());
+					DecimalFormat df = (DecimalFormat) nf;
+					df.applyPattern(pattern);
+
+					value = df.format(value);
+					System.out.println(value);
+					// simbolo = new DecimalFormatSymbols();
+					// simbolo.setDecimalSeparator('.');
+					// simbolo.setGroupingSeparator(',');
+					// campoTexto.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(
+					// new javax.swing.text.NumberFormatter(new
+					// java.text.DecimalFormat("###,###,##", simbolo))));
+					// campoTexto.setValue(value);
 				} else if (value instanceof Integer) {
 					campoTexto.setText("" + (Integer) value);
 				}
@@ -68,22 +84,13 @@ public class MiRender extends javax.swing.table.DefaultTableCellRenderer impleme
 					value = parsed.toString();
 				}
 			} else {
-				this.setHorizontalAlignment(SwingConstants.RIGHT);
+				this.setHorizontalAlignment(SwingConstants.LEFT);
 				if (value instanceof String) {
 					campoTexto.setText((String) value);
 				}
 			}
 		}
-
 		return this;
 	}
 
-	/*
-	 * public void tableChanged(TableModelEvent e) { DefaultTableModel modelo =
-	 * (DefaultTableModel) e.getSource(); int row = e.getFirstRow(); int column =
-	 * e.getColumn(); String cellValue = String.valueOf(sqlData.getValueAt(row,
-	 * column)); System.out.println("Value at (" + row + "," + column +
-	 * ") changed to " + "\'" + cellValue + "\'"); }
-	 * 
-	 */
 }

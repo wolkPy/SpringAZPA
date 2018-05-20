@@ -1,6 +1,8 @@
 package py.com.qa.view;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.sql.CallableStatement;
@@ -18,6 +20,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.event.InternalFrameEvent;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 
 import py.com.qa.clases.DetalleLanzamiento;
 import py.com.qa.clases.ExcelWriter;
@@ -30,7 +34,7 @@ import py.com.qa.configs.MiRender;
 /* CLASE QUE PERMITE DISEÑAR LA PLANILLA DE ACUERDO A LA SELECCION DEL USUARIO, VERIFICA SI EXISTE EL MOVIMIENTO DE PLANILLA EN FECHA, LUEGO CARGA EL FORMATO Y DATOS SI EXISTE, O SOLO FORMATO SI NO.
  * AL CARGAR LOS DATOS Y FORMATO VUELVE A RECORRER PARA "CONOCER" POSICION DE COLUMNA (PARA EVITAR PREGUNTAR EN CADA RECORRIDA) Y FORMATE DE ACUERDO A LOS TIPOS DE VARIABLES, MEDIA Y DECIMALES.
  */
-public class DataView extends AbstractInternalFrame implements KeyListener {
+public class DataView extends AbstractInternalFrame implements KeyListener, ActionListener, TableModelListener {
 	/******************************************************/
 	/******************* CONSTANTES ***********************/
 	/******************************************************/
@@ -72,6 +76,7 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 	private SimpleDateFormat sdf;
 	private Date date;
 	private String fecha;
+	private boolean postVerificacion = false;
 	/******************************************************/
 	/****************** MOVIMIENTO ************************/
 	/******************************************************/
@@ -94,13 +99,13 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		/******** RECUPERAMOS EL MODELO DE LA PLANILLA *********/
 		/*******************************************************/
 		ComponentesView.messageLbl.setIcon(new ImageIcon(PrincipalView.class.getResource("/warnupd.gif")));
-		ComponentesView.messageTxt.setText("Iniciando... Favor Espere!");
-		this.repaint();
+		// ComponentesView.messageTxt.setText("Iniciando... Favor Espere!");
+		// this.repaint();
 		initialize();
 		crearPlanillaYVisualizar(this);
 		ComponentesView.messageLbl.setIcon(new ImageIcon(PrincipalView.class.getResource("/run.gif")));
-		ComponentesView.messageTxt.setText("Listo!");
-		this.repaint();
+		// ComponentesView.messageTxt.setText("Listo!");
+		// this.repaint();
 	}
 
 	@SuppressWarnings("static-access")
@@ -169,6 +174,12 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 				crearSentencia(codEmpresa, codSucursal);
 			}
 		}
+		//
+		ComponentesView.submitBtt.setActionCommand("submit");
+		ComponentesView.submitBtt.addActionListener((ActionListener) this);
+		ComponentesView.salirBtt.setActionCommand("salir");
+		ComponentesView.salirBtt.addActionListener((ActionListener) this);
+
 	}
 
 	private void crearSentencia(String codEmpresa, String codSucursal) {
@@ -195,7 +206,7 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 
 	private void crearPlanillaYVisualizar(DataView dataView) {
 		System.out.println("crearPlanillaYVisualizar...");
-		ComponentesView.messageTxt.setText("Montando planilla... Favor espere!!!");
+		// ComponentesView.messageTxt.setText("Montando planilla... Favor espere!!!");
 		/** Principal Panel **/
 		JPanel principalPane = new JPanel();
 		principalPane.setLayout(new BorderLayout());
@@ -222,8 +233,10 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 					return true;
 				}
 			};
+
 			// SETEAR CONFIGURACION DE LA TABLA CON MIRENDER()
 			sqlData.setDefaultRenderer(Object.class, new MiRender());
+			sqlData.getModel().addTableModelListener(this);
 			sqlData.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			centerPane = new JScrollPane(sqlData);
 			centerPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, sqlData.getTableHeader());
@@ -231,8 +244,8 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		}
 		/************** CONOCER TABLA **************/
 		/** SABER DONDE SE ENCUENTRA CADA COLUMNA **/
-		ComponentesView.messageTxt.setText("Montando planilla... Favor espere!!!");
-		this.repaint(200);
+		// ComponentesView.messageTxt.setText("Montando planilla... Favor espere!!!");
+		// this.repaint(200);
 		conocerTabla();
 		/* RECORRER TABLA */
 		verificarPlanillaCargada(codEmpresa, planilla.getCodPlanilla(), fecha);
@@ -310,8 +323,8 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 	private void recorrerTabla() {
 
 		System.out.println("recorrerTabla");
-		System.out.println(ComponentesView.messageTxt.getText());
-		ComponentesView.messagePanel.repaint();
+		// System.out.println(ComponentesView.messageTxt.getText());
+		// ComponentesView.messagePanel.repaint();
 
 		boolean isVisible = false;
 		boolean isOK = false;
@@ -412,10 +425,6 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 							/** SE RECUPERA QUERY CON FUNCION DE BASE DE DATOS **/
 							/****************************************************/
 							try {
-								// sentencia = con.prepareCall("{?=call prc_qa_execute_formula(?)}");
-								// sentencia.registerOutParameter(1, Types.VARCHAR);
-								// sentencia.setString(2, formulaAux);
-								// sentencia.executeQuery();
 								sentencia = con.prepareCall("{?=call fnc_qa_execute_formula(?,?,?,?)}");
 								sentencia.registerOutParameter(1, Types.VARCHAR);
 								sentencia.setString(2, codEmpresa);
@@ -426,10 +435,6 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 								sentencia.executeQuery();
 								aValue = sentencia.getString(1);
 
-								// if (aValue != null && sqlData.getValueAt(k,
-								// posColTipoVar).toString().equals("0")) {
-								// aValue = "0";
-								// }
 								sqlData.setValueAt(aValue, k, i);
 								sentencia.close();
 							} catch (SQLException e1) {
@@ -441,6 +446,7 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 				}
 			}
 		}
+		postVerificacion = true;
 	}
 
 	/* INSERTAR O ACTUALIZAR PLANILLA */
@@ -584,7 +590,7 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
 			guardar();
 		}
-
+		postVerificacion = false;
 		// INICIALIZAR VARIABLES "GLOBALES"
 		Configuracion.POSCOLTIPOVAR = 0;
 		Configuracion.POSCOLESFORMULA = 0;
@@ -602,10 +608,12 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 
 	@Override
 	public void keyTyped(KeyEvent e) {
+		System.out.println("keyTyped");
 	}
 
 	@Override
 	public void keyReleased(KeyEvent e) {
+		System.out.println("keyReleased");
 	}
 
 	@Override
@@ -619,25 +627,47 @@ public class DataView extends AbstractInternalFrame implements KeyListener {
 		if (e.getKeyCode() == KeyEvent.VK_F10) {
 			/* VERIFICAR/GUARDAR/ACTUALIZAR MOVIMIENTO */
 			ComponentesView.messageLbl.setIcon(new ImageIcon(PrincipalView.class.getResource("/warnupd.gif")));
-			ComponentesView.messageTxt.setText("Registrando planilla... Favor espere!!!");
+			// ComponentesView.messageTxt.setText("Registrando planilla... Favor
+			// espere!!!");
 			repaint();
 			guardar();
 			ComponentesView.messageLbl.setIcon(new ImageIcon(PrincipalView.class.getResource("/run.gif")));
-			ComponentesView.messageTxt.setText("Listo!");
+			// ComponentesView.messageTxt.setText("Listo!");
 		}
 		if (e.getKeyCode() == KeyEvent.VK_F11) {
 			/* VERIFICAR/GUARDAR/ACTUALIZAR MOVIMIENTO */
 			ComponentesView.messageLbl.setIcon(new ImageIcon(PrincipalView.class.getResource("/warnupd.gif")));
-			ComponentesView.messageTxt.setText("Exportando a Excel... Favor Espere!");
+			// ComponentesView.messageTxt.setText("Exportando a Excel... Favor Espere!");
 			repaint();
 			exportarAExcel();
 			ComponentesView.messageLbl.setIcon(new ImageIcon(PrincipalView.class.getResource("/run.gif")));
-			ComponentesView.messageTxt.setText("Listo!");
+			// ComponentesView.messageTxt.setText("Listo!");
 			repaint();
 		}
 		if (e.getKeyCode() == KeyEvent.VK_F12) {
 			/* GUARDAR Y/O SALIR DE PLANILLA */
 			salir();
+		}
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (Configuracion.OPENFRAMECOUNT > 0) {
+			if ("salir".equals(e.getActionCommand())) {
+				salir();
+			}
+			if ("submit".equals(e.getActionCommand())) {
+				guardar();
+			}
+		}
+	}
+
+	@Override
+	public void tableChanged(TableModelEvent e) {
+		if (e.getType() == TableModelEvent.UPDATE || e.getType() == TableModelEvent.INSERT) {
+			if (postVerificacion) {
+				ComponentesView.submitBtt.setEnabled(true);
+			}
 		}
 	}
 }

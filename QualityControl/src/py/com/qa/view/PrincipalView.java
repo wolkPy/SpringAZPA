@@ -19,7 +19,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 
 import javax.swing.ImageIcon;
-
+import javax.swing.JButton;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -36,7 +36,6 @@ import py.com.qa.exceptions.Code;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTextField;
 import javax.swing.JTree;
 
 import java.awt.BorderLayout;
@@ -142,20 +141,33 @@ public class PrincipalView extends JFrame
 		workPanel.setLayout(new BorderLayout(0, 0));
 		desktop = new JDesktopPane();
 		desktop.setBackground(SystemColor.inactiveCaption);
-		workPanel.add(desktop);
+		// workPanel.add(desktop);
+		workPanel.add(desktop, BorderLayout.CENTER);
 		desktop.setDragMode(JDesktopPane.OUTLINE_DRAG_MODE);
-		workSpacePanel.add(workPanel, BorderLayout.CENTER);
-		//
 		ComponentesView.messagePanel = new JPanel();
 		workSpacePanel.add(ComponentesView.messagePanel, BorderLayout.SOUTH);
+		workSpacePanel.add(workPanel, BorderLayout.CENTER);
+		//
+		// workSpacePanel.add(ComponentesView.messagePanel, BorderLayout.SOUTH);
 		{
 			ComponentesView.messageLbl = new JLabel("");
 			ComponentesView.messagePanel.add(ComponentesView.messageLbl, BorderLayout.WEST);
 		}
+		// {
+		// ComponentesView.messageTxt = new JTextField(50);
+		// ComponentesView.messageTxt.setEnabled(false);
+		// ComponentesView.messagePanel.add(ComponentesView.messageTxt,
+		// BorderLayout.WEST);
+		// }
 		{
-			ComponentesView.messageTxt = new JTextField(50);
-			ComponentesView.messageTxt.setEnabled(false);
-			ComponentesView.messagePanel.add(ComponentesView.messageTxt, BorderLayout.WEST);
+			ComponentesView.submitBtt = new JButton("Aceptar");
+			ComponentesView.messagePanel.add(ComponentesView.submitBtt, BorderLayout.CENTER);
+			ComponentesView.submitBtt.setEnabled(false);
+		}
+		{
+			ComponentesView.salirBtt = new JButton("Salir");
+			ComponentesView.messagePanel.add(ComponentesView.salirBtt, BorderLayout.CENTER);
+			ComponentesView.salirBtt.setEnabled(true);
 		}
 
 		return workSpacePanel;
