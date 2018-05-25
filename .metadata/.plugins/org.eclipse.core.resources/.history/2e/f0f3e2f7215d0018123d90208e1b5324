@@ -34,6 +34,13 @@ public class MiRender extends javax.swing.table.DefaultTableCellRenderer impleme
 		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		JFormattedTextField campoTexto = new JFormattedTextField();
 
+		if (isSelected == false) {
+			this.setBackground(Color.lightGray);
+			this.setForeground(Color.BLACK);
+		} else if (isSelected == true) {
+			this.setBackground(Color.GREEN);
+			this.setForeground(Color.BLACK);
+		}
 		// SI ES FORMULA PINTAR CAMPO
 		// DecimalFormatSymbols simbolo = null;
 
@@ -46,7 +53,6 @@ public class MiRender extends javax.swing.table.DefaultTableCellRenderer impleme
 			this.setBackground(Color.WHITE);
 			this.setForeground(Color.BLACK);
 		}
-
 		// SETEAR FORMATO DE CAMPO
 		if (column <= Configuracion.POSCOLMEDIDA) {
 			this.setHorizontalAlignment(SwingConstants.LEFT);

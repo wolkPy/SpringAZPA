@@ -23,6 +23,10 @@ public class MiRender extends javax.swing.table.DefaultTableCellRenderer impleme
 	 */
 	private static final long serialVersionUID = 1L;
 	NumberFormat nf = NumberFormat.getInstance();
+	//
+	public static final DefaultTableCellRenderer DEFAULT_RENDERER = new DefaultTableCellRenderer();
+	// private Integer columna;
+	//
 
 	public boolean isSelected(int row, int column) {
 		return true;
@@ -31,10 +35,17 @@ public class MiRender extends javax.swing.table.DefaultTableCellRenderer impleme
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 			int row, int column) {
+		// Component c = DEFAULT_RENDERER.getTableCellRendererComponent(table, value,
+		// isSelected, hasFocus, row, column);
 		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-		JFormattedTextField campoTexto = new JFormattedTextField();
 
+		if (isSelected == false) {
+			this.setBackground(Color.lightGray);
+		} else if (isSelected == true) {
+			this.setBackground(Color.GREEN);
+		}
 		// SI ES FORMULA PINTAR CAMPO
+		JFormattedTextField campoTexto = new JFormattedTextField();
 		// DecimalFormatSymbols simbolo = null;
 
 		if (table.getValueAt(row, Configuracion.POSCOLESFORMULA).toString().equals("S")) {
@@ -46,7 +57,6 @@ public class MiRender extends javax.swing.table.DefaultTableCellRenderer impleme
 			this.setBackground(Color.WHITE);
 			this.setForeground(Color.BLACK);
 		}
-
 		// SETEAR FORMATO DE CAMPO
 		if (column <= Configuracion.POSCOLMEDIDA) {
 			this.setHorizontalAlignment(SwingConstants.LEFT);

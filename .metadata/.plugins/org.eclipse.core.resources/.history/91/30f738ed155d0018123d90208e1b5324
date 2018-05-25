@@ -13,7 +13,6 @@ import java.util.Locale;
 import javax.swing.JFormattedTextField;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
 public class MiRender extends javax.swing.table.DefaultTableCellRenderer implements TableCellRenderer {
@@ -25,6 +24,7 @@ public class MiRender extends javax.swing.table.DefaultTableCellRenderer impleme
 	NumberFormat nf = NumberFormat.getInstance();
 
 	public boolean isSelected(int row, int column) {
+		setBackground(Color.lightGray);
 		return true;
 	}
 
@@ -32,9 +32,8 @@ public class MiRender extends javax.swing.table.DefaultTableCellRenderer impleme
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 			int row, int column) {
 		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-		JFormattedTextField campoTexto = new JFormattedTextField();
-
 		// SI ES FORMULA PINTAR CAMPO
+		JFormattedTextField campoTexto = new JFormattedTextField();
 		// DecimalFormatSymbols simbolo = null;
 
 		if (table.getValueAt(row, Configuracion.POSCOLESFORMULA).toString().equals("S")) {
@@ -46,7 +45,6 @@ public class MiRender extends javax.swing.table.DefaultTableCellRenderer impleme
 			this.setBackground(Color.WHITE);
 			this.setForeground(Color.BLACK);
 		}
-
 		// SETEAR FORMATO DE CAMPO
 		if (column <= Configuracion.POSCOLMEDIDA) {
 			this.setHorizontalAlignment(SwingConstants.LEFT);
