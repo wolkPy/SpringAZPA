@@ -291,7 +291,7 @@ public class PrincipalView extends JFrame
 
 //		menu.setActionCommand("ENTRADADIARIA");
 //		menu.addActionListener(this);
-//		menuBar.add(menu);
+//		menuBar.add(menu);B
 
 		//CIERRE
 		menu = new JMenu("Cierre");
