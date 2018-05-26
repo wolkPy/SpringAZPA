@@ -23,6 +23,7 @@ import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+import py.com.qa.clases.Cierre;
 import py.com.qa.clases.DetalleLanzamiento;
 import py.com.qa.clases.ExcelWriter;
 import py.com.qa.clases.Lanzamiento;
@@ -40,6 +41,7 @@ public class DataView extends AbstractInternalFrame implements KeyListener, Acti
 	/******************************************************/
 	private static final String sqlSelectPlanillaDescripcion = "select a.cod_empresa,a.cod_sucursal,a.cod_planilla,a.descripcion,a.cod_planilla_padre,a.orden,a.estado,nvl(b.plc_tam_col,0) plc_tam_col from qa_planilla a, qa_planilla_config b where a.cod_empresa = b.cod_empresa(+) and a.cod_sucursal = b.cod_sucursal(+) and a.cod_planilla = b.cod_planilla(+) and a.cod_empresa = ? and a.cod_sucursal = ? and a.descripcion = ? and a.cod_planilla_padre <> 0 order by to_number(orden)";
 	private static final String sqlSelectMovimiento = "select cod_movimiento from qa_lab_mov where cod_empresa = ? and cod_planilla = ? and fecha = ?";
+	private static final String sqlCierre = "select cod_empresa, fecha, ind_cerrado, cod_usr_cierre, fecha_cierre from qa_cierre_lab_mov where cod_empresa = ? and fecha = ?";
 	/**
 	 * 
 	 */
@@ -54,6 +56,7 @@ public class DataView extends AbstractInternalFrame implements KeyListener, Acti
 	private String descripcion;
 	private Planilla planilla;
 	private Lanzamiento lan;
+	private Cierre cierre;
 
 	/******************************************************/
 	/************ CONOCER POSICION EN TABLA ***************/
@@ -220,17 +223,22 @@ public class DataView extends AbstractInternalFrame implements KeyListener, Acti
 				private static final long serialVersionUID = 1L;
 
 				public boolean isCellEditable(int row, int column) {
-					/** SI LA COLUMNA DE ESA FILA ES FORMULA ENTONCES **/
-					/***************** NO ES EDITABLE ******************/
-					if (sqlData.getValueAt(row, posColEsFormula).equals("S")) {
+					// SI ESTA CERRADO EL PERIODO NO SE PUEDE EDITAR
+					if (cierre.getIndCerrado().equals("N")) {
+						/** SI LA COLUMNA DE ESA FILA ES FORMULA ENTONCES **/
+						/***************** NO ES EDITABLE ******************/
+						if (sqlData.getValueAt(row, posColEsFormula).equals("S")) {
+							return false;
+						}
+						/** SI LA COLUMNA ES MENOR A LA COLUMNA 1 ENTONCES **/
+						/****************** NO ES EDITABLE ******************/
+						if (column <= posColMedida) {
+							return false;
+						}
+						return true;
+					} else {
 						return false;
 					}
-					/** SI LA COLUMNA ES MENOR A LA COLUMNA 1 ENTONCES **/
-					/****************** NO ES EDITABLE ******************/
-					if (column <= posColMedida) {
-						return false;
-					}
-					return true;
 				}
 			};
 
@@ -312,6 +320,28 @@ public class DataView extends AbstractInternalFrame implements KeyListener, Acti
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
 				lan = new Lanzamiento(codEmpresa, rs.getLong("cod_movimiento"), fecha, codPlanilla);
+			}
+			pstmt.close();
+			rs.close();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+		verificarCierre(codEmpresa, fecha);
+	}
+
+	private void verificarCierre(String codEmpresa, String fecha) {
+		System.out.println("verificarCierre...");
+		try {
+			Connection con = Configuracion.CON;
+			PreparedStatement pstmt;
+			pstmt = con.prepareStatement(sqlCierre);
+			pstmt.setString(1, codEmpresa);
+			pstmt.setString(2, fecha);
+
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				cierre = new Cierre(rs.getString("cod_empresa"), rs.getString("fecha"), rs.getString("ind_cerrado"),
+						rs.getString("cod_usr_cierre"), rs.getTimestamp("fecha_cierre"));
 			}
 			pstmt.close();
 			rs.close();
@@ -451,36 +481,40 @@ public class DataView extends AbstractInternalFrame implements KeyListener, Acti
 
 	/* INSERTAR O ACTUALIZAR PLANILLA */
 	private void guardar() {
-		System.out.println("guardar...");
-		/*******************************************************/
-		/************** VERIFICAR LANZAMIENTO ******************/
-		/*******************************************************/
-		verificarPlanillaCargada(Configuracion.CODEMPRESA, planilla.getCodPlanilla(), this.fecha);
-		/*******************************************************/
-		/************ INSERTAR NUEVO LANZAMIENTO ***************/
-		/*************** EN CASO DE QUE NO EXISTA **************/
-		/*******************************************************/
-		if (lan == null) {
-			/**********************************************************/
-			/****** AL INSERTAR RETORNA EL CODIGO DEL MOVIMIENTO ******/
-			/**********************************************************/
-			lan = new Lanzamiento();
-			lan.setCodEmpresa(Configuracion.CODEMPRESA);
-			lan.setCodPlanilla(planilla.getCodPlanilla());
-			lan.setFecha(sdf.format(date));
-			lan.setCodPlanilla(lan.insertar());
-			/**********************************************************/
-			/************ RECORRER LOS REGISTROS - GUARDAR ************/
-			/**********************************************************/
-			insertarDetalleMovimiento();
+		if (cierre.getIndCerrado().equals("N")) {
+			System.out.println("guardar...");
+			/*******************************************************/
+			/************** VERIFICAR LANZAMIENTO ******************/
+			/*******************************************************/
+			verificarPlanillaCargada(Configuracion.CODEMPRESA, planilla.getCodPlanilla(), this.fecha);
+			/*******************************************************/
+			/************ INSERTAR NUEVO LANZAMIENTO ***************/
+			/*************** EN CASO DE QUE NO EXISTA **************/
+			/*******************************************************/
+			if (lan == null) {
+				/**********************************************************/
+				/****** AL INSERTAR RETORNA EL CODIGO DEL MOVIMIENTO ******/
+				/**********************************************************/
+				lan = new Lanzamiento();
+				lan.setCodEmpresa(Configuracion.CODEMPRESA);
+				lan.setCodPlanilla(planilla.getCodPlanilla());
+				lan.setFecha(sdf.format(date));
+				lan.setCodPlanilla(lan.insertar());
+				/**********************************************************/
+				/************ RECORRER LOS REGISTROS - GUARDAR ************/
+				/**********************************************************/
+				insertarDetalleMovimiento();
+			} else {
+				/*******************************************************/
+				/** EN CASO DE QUE EXISTA ENTONCES SE DEBE ACTUALIZAR **/
+				/*******************************************************/
+				actualizarDetalleMovimiento();
+			}
+			ComponentesView.messageLbl.setIcon(new ImageIcon(PrincipalView.class.getResource("/run.gif")));
+			ComponentesView.messageLbl.setText("Listo!");
 		} else {
-			/*******************************************************/
-			/** EN CASO DE QUE EXISTA ENTONCES SE DEBE ACTUALIZAR **/
-			/*******************************************************/
-			actualizarDetalleMovimiento();
+			JOptionPane.showMessageDialog(this, "Periodo Cerrado", "Atención", JOptionPane.WARNING_MESSAGE);
 		}
-		ComponentesView.messageLbl.setIcon(new ImageIcon(PrincipalView.class.getResource("/run.gif")));
-		ComponentesView.messageLbl.setText("Listo!");
 	}
 
 	private void insertarDetalleMovimiento() {
@@ -584,11 +618,14 @@ public class DataView extends AbstractInternalFrame implements KeyListener, Acti
 
 	private void salir() {
 		System.out.println("salir...");
-		/* ANTES DE CERRAR SE DEBE PREGUNTAR */
-		/* SI SE DESEA GUARDAR LOS REGISTROS. */
-		if (JOptionPane.showConfirmDialog(null, "Guardar y salir de la planilla?", "Confirmar salida",
-				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-			guardar();
+		// SI ESTA ABIERTA ENTONCES PREGUNTA SI SE QUIERE GUARDAR
+		if (cierre.getIndCerrado().equals("N")) {
+			/* ANTES DE CERRAR SE DEBE PREGUNTAR */
+			/* SI SE DESEA GUARDAR LOS REGISTROS. */
+			if (JOptionPane.showConfirmDialog(null, "Guardar y salir de la planilla?", "Confirmar salida",
+					JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+				guardar();
+			}
 		}
 		postVerificacion = false;
 		// INICIALIZAR VARIABLES "GLOBALES"

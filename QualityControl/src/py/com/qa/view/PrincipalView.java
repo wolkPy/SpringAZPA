@@ -288,35 +288,41 @@ public class PrincipalView extends JFrame
 
 		JMenuBar menuBar = new JMenuBar();
 		JMenu menu = new JMenu("Entrada diaria");
-		menu.setActionCommand("ENTRADADIARIA");
-		menu.addActionListener(this);
-		menuBar.add(menu);
 
+//		menu.setActionCommand("ENTRADADIARIA");
+//		menu.addActionListener(this);
+//		menuBar.add(menu);
+
+		//CIERRE
 		menu = new JMenu("Cierre");
-		menu.setActionCommand("CIERRE");
-		menu.addActionListener(this);
 		menuBar.add(menu);
 
-		menu = new JMenu("Informes");
-		menu.setActionCommand("INFORME");
-		menu.addActionListener(this);
-		menuBar.add(menu);
-
-		menu = new JMenu("Configuración");
-		menu.setActionCommand("CONFIGURACION");
-		menu.addActionListener(this);
-		menuBar.add(menu);
-
-		JMenuItem menuItem = new JMenuItem("Planilla");
-		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.ALT_MASK));
-		menuItem.setActionCommand("newPlanilla");
+		JMenuItem menuItem = new JMenuItem("Apertura/Cierre de Periodos");
+		menuItem.setActionCommand("cierrePeriodo");
 		menuItem.addActionListener(this);
 		menu.add(menuItem);
 
-		menuItem = new JMenuItem("Variable");
-		menuItem.setActionCommand("newVariable");
-		menuItem.addActionListener(this);
-		menu.add(menuItem);
+
+//		menu = new JMenu("Informes");
+//		menu.setActionCommand("INFORME");
+//		menu.addActionListener(this);
+//		menuBar.add(menu);
+
+//		menu = new JMenu("Configuración");
+//		menu.setActionCommand("CONFIGURACION");
+//		menu.addActionListener(this);
+//		menuBar.add(menu);
+
+//		JMenuItem menuItem = new JMenuItem("Planilla");
+//		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.ALT_MASK));
+//		menuItem.setActionCommand("newPlanilla");
+//		menuItem.addActionListener(this);
+//		menu.add(menuItem);
+
+//		menuItem = new JMenuItem("Variable");
+//		menuItem.setActionCommand("newVariable");
+//		menuItem.addActionListener(this);
+//		menu.add(menuItem);
 
 		menu = new JMenu("Salir");
 		menu.setActionCommand("SALIR");

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename field &apos;indi_cerrado&apos; in &apos;py.com.qa.clases.Cierre&apos; to &apos;indCerrado&apos;&#x0D;&#x0A;- Original project: &apos;QualityControl&apos;&#x0D;&#x0A;- Original element: &apos;py.com.qa.clases.Cierre.indi_cerrado&apos;&#x0D;&#x0A;- Renamed element: &apos;py.com.qa.clases.Cierre.indCerrado&apos;&#x0D;&#x0A;- Update references to refactored element&#x0D;&#x0A;- Update textual occurrences in comments and strings" delegate="false" deprecate="false" description="Rename field &apos;indi_cerrado&apos;" flags="589826" getter="false" id="org.eclipse.jdt.ui.rename.field" input="/src&lt;py.com.qa.clases{Cierre.java[Cierre^indi_cerrado" name="indCerrado" references="true" setter="false" stamp="1527254667825" textual="false" version="1.0"/>
+</session>

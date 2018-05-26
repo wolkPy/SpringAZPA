@@ -1,0 +1,46 @@
+package py.com.qa.clases;
+
+public class Cierre {
+	/* CONSTANTES */
+	private static final String sqlUpdate = "update qa_planilla set ind_cerrado = ? where cod_empresa = ? and fecha = ?";
+	private static final String sqlSelectAll = "select cod_empresa, fecha, ind_cerrado, cod_usr_cierre, fecha_cierre from qa_planilla";
+	private static final String sqlSelectId = "select cod_empresa, fecha, ind_cerrado, cod_usr_cierre, fecha_cierre from qa_planilla where cod_empresa = ? and fecha = ?";
+	/* VARIABLES */
+	private String codEmpresa;
+	private String fecha;
+	private String indi_cerrado;
+	private String codUserCierre;
+	private String fechaCierre;
+
+	public String getFecha() {
+		return fecha;
+	}
+
+	public void setFecha(String fecha) {
+		this.fecha = fecha;
+	}
+
+	public String getIndi_cerrado() {
+		return indi_cerrado;
+	}
+
+	public void setIndi_cerrado(String indi_cerrado) {
+		this.indi_cerrado = indi_cerrado;
+	}
+
+	public String getCodUserCierre() {
+		return codUserCierre;
+	}
+
+	public void setCodUserCierre(String codUserCierre) {
+		this.codUserCierre = codUserCierre;
+	}
+
+	public String getFechaCierre() {
+		return fechaCierre;
+	}
+
+	public void setFechaCierre(String fechaCierre) {
+		this.fechaCierre = fechaCierre;
+	}
+}

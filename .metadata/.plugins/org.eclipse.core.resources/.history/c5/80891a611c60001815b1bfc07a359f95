@@ -1,0 +1,35 @@
+package py.com.qa.clases;
+
+public class Cierre {
+	private String fecha;
+	private String indi_cerrado;
+	private String codUserCierre;
+	private String fechaCierre;
+	
+	
+	
+	public String getFecha() {
+		return fecha;
+	}
+	public void setFecha(String fecha) {
+		this.fecha = fecha;
+	}
+	public String getIndi_cerrado() {
+		return indi_cerrado;
+	}
+	public void setIndi_cerrado(String indi_cerrado) {
+		this.indi_cerrado = indi_cerrado;
+	}
+	public String getCodUserCierre() {
+		return codUserCierre;
+	}
+	public void setCodUserCierre(String codUserCierre) {
+		this.codUserCierre = codUserCierre;
+	}
+	public String getFechaCierre() {
+		return fechaCierre;
+	}
+	public void setFechaCierre(String fechaCierre) {
+		this.fechaCierre = fechaCierre;
+	}
+}
